@@ -13,8 +13,8 @@ sys.path.append(mapol_path)
 from tools.aeronet_matchup_plot import plot_four_csv_maps
 from tools.aeronet_matchup_order import get_image_files,ordered_image_list
 from tools.aeronet_matchup_plot import plot_four_csv_maps
-from tools.aeronet_matchup_combine import aeronet_combine_summary
-from tools.aeronet_tools import print_threads_info, get_rules_str
+from tools.narwhal_matchup_combine import aeronet_combine_summary
+from tools.narwhal_tools import print_threads_info, get_rules_str
 
 def main():
     print_threads_info()

@@ -14,9 +14,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from tools.aeronet_matchup_plot import plot_four_csv_maps
 from tools.aeronet_matchup_html_suite import create_html_with_embedded_images_and_buttons, format_html_info_matchup
-from tools.aeronet_matchup_order import get_image_files,ordered_image_list
-from tools.aeronet_matchup_plot import plot_four_csv_maps
-from tools.aeronet_matchup_plot import plot_corr_one_density_kde
+from tools.narwhal_matchup_order import get_image_files,ordered_image_list, plot_four_csv_maps, plot_corr_one_density_kde
 
 def aeronet_combine_summary(product1, save_path1, tspan, chi2_max1, nv_min1, min_aod1, max_aod1, \
                             share_html, share_csv, all_rules=None, val_source='AERONET', logo_path=None):

@@ -28,15 +28,15 @@ import matplotlib.pyplot as plt
 
 from tools.aeronet_matchup_extract import subset_time_pace_aeronet, subset_loc_pace_data, \
                                             prepare_date, prepare_vars
-from tools.aeronet_matchup_plot import plot_corr_one_density_kde
-from tools.aeronet_tools import find_closest_wavelength_vars
+from tools.narwhal_matchup_plot import plot_corr_one_density_kde, plot_four_csv_maps
+from tools.narwhal_tools import find_closest_wavelength_vars
 from tools.aeronet_matchup_man import get_man_all
 
-from tools.aeronet_matchup_download import download_pace_data, get_aeronet_file, process_local_nc_files
+from tools.aeronet_matchup_download import get_aeronet_file, process_local_nc_files
+from tools.narwhal_pace import download_pace_data
 from tools.aeronet_matchup_search import aeronet_search, plot_search
 from tools.aeronet_matchup_format import clean_pace_data
 
-from tools.aeronet_matchup_plot import plot_four_csv_maps
 from tools.aeronet_matchup_html_suite import create_html_with_embedded_images
 from tools.aeronet_matchup_order import get_image_files,ordered_image_list
 from tools.aeronet_tools import get_rules_str, get_filter_rules, clean_value

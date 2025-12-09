@@ -22,7 +22,7 @@ sys.path.append(mapol_path)
 
 # Import your custom modules (preferably explicitly)
 from tools.aeronet_matchup_summary import aeronet_matchup_summary
-from tools.aeronet_tools import print_threads_info, get_rules_str
+from tools.narwhal_tools import print_threads_info, get_rules_str
 
 from tools.validation_earthcare_matchup import run_earthcare_matchup
 from tools.validation_earthcare_csv import split_earthcare_csv
