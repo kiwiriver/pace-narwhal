@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=aeronet
+#SBATCH --partition=research
+#SBATCH --exclude=poseidon-compute-[13]
+#SBATCH --threads-per-core=1
+
+# Activate your python environment
+mamba activate py3.12
+
+python3='/accounts/mgao1/miniforge3/envs/py3.12/bin/python'
+$python3 run3_man.py
+
+#python run3_man.py

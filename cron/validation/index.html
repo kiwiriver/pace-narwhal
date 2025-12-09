@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PACE Polarimeter Aerosol and Ocean validation (support by pet project NARWHAL) </title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    background: #f0f0f0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  input, select {
+    padding: 5px;
+    font-size: 1rem;
+  }
+  
+  /* Filter buttons */
+  .filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 15px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .filter-label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.95rem;
+  }
+  
+  .filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .filter-buttons button {
+    background: #e9e9e9;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  
+  .filter-buttons button:hover {
+    background: #d9d9d9;
+  }
+  
+  .filter-buttons button.active {
+    background: #0066cc;
+    color: white;
+    border-color: #0066cc;
+  }
+
+  /* File selection dropdown */
+  .dropdown-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 15px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  .dropdown-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 350px;
+    flex: 1;
+  }
+  .dropdown-group label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.95rem;
+  }
+  .dropdown-group select {
+    width: 100%;
+    min-width: 350px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+  }
+  .dropdown-group select:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 5px rgba(0,102,204,0.3);
+  }
+  
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #666;
+    padding: 5px 0;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .action-buttons button {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .action-buttons button:hover {
+    background: #218838;
+  }
+  
+  main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .column {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  .column h2 {
+    text-align: center;
+    background: #fafafa;
+    margin: 0 0 10px 0;
+    padding: 15px 0;
+    color: #0066cc;
+    border-bottom: 2px solid #0066cc;
+    flex-shrink: 0;
+  }
+  .file-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .file-label {
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 10px 0;
+    padding: 10px;
+    background: #f9f9f9;
+    border-left: 4px solid #0066cc;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .file-stats {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+    font-weight: normal;
+  }
+  a {
+    text-decoration: none;
+    color: #0066cc;
+    display: block;
+    margin: 0 0 10px 0;
+    word-wrap: break-word;
+    padding: 5px;
+    background: #f0f8ff;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  a:hover {
+    background: #e6f3ff;
+    text-decoration: underline;
+  }
+  iframe {
+    width: 100%;
+    height: 8000px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .iframe-container {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .expand-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .expand-button:hover {
+    background: rgba(255,255,255,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .no-files {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+    background: #f8f8f8;
+    border-radius: 4px;
+    margin: 20px 0;
+  }
+  .loading {
+    text-align: center;
+    color: #0066cc;
+    font-style: italic;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="control-row">
+      <h2>PACE Polarimeter Aerosol and Ocean validation (support by pet project NARWHAL)</h2>
+      <div class="action-buttons">
+        <button onclick="clearAllSelections()">Clear All</button>
+        <button onclick="openSelectedInNewTab()">Open in New Tab</button>
+      </div>
+    </div>
+
+    <!-- Filter buttons -->
+    <div class="filter-row">
+      <div class="filter-group">
+        <div class="filter-label">Data Suite:</div>
+        <div class="filter-buttons" id="dataSuiteButtons">
+          <button data-suite="harp2_fastmapol" onclick="selectDataSuite(this)" class="active">HARP2 FastMAPOL</button>
+          <button data-suite="spexone_fastmapol" onclick="selectDataSuite(this)">SPEXone FastMAPOL</button>
+          <button data-suite="spexone_remotap" onclick="selectDataSuite(this)">SPEXone REMOTAP</button>
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <div class="filter-label">Validation Type:</div>
+        <div class="filter-buttons" id="validationTypeButtons">
+          <button data-type="aeronet" onclick="selectValidationType(this)" class="active">AERONET</button>
+          <button data-type="aeronet_oc" onclick="selectValidationType(this)">AERONET OC</button>
+          <button data-type="man" onclick="selectValidationType(this)">MAN</button>
+          <button data-type="pacepax" onclick="selectValidationType(this)">PACE PAX</button>
+          <button data-type="pvst" onclick="selectValidationType(this)">PVST</button>
+          <button data-type="earthcare" onclick="selectValidationType(this)">EarthCare</button>
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <div class="filter-label">Quality Flag:</div>
+        <div class="filter-buttons" id="qualityFlagButtons">
+          <!-- Quality flag buttons will be dynamically generated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- File selection dropdown -->
+    <div class="dropdown-row">
+      <div class="dropdown-group">
+        <label for="fileSelect">Available Files:</label>
+        <select id="fileSelect" onchange="selectFile(this.value)">
+          <option value="">Select a file...</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="status-row">
+      <div id="statusInfo">Loading files...</div>
+      <div id="fileStats"></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="column" id="mainColumn">
+      <h2 id="columnTitle">HARP2 FastMAPOL - AERONET - All QF</h2>
+      <div class="no-files">Select a file from the dropdown above</div>
+    </div>
+  </main>
+
+<script>
+const baseURL = "https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/validation/summary/";
+
+const folderPaths = {
+  harp2_fastmapol: "harp2_fastmapol/html/",
+  spexone_fastmapol: "spexone_fastmapol/html/",
+  spexone_remotap: "spexone_remotap/html/"
+};
+
+const suiteNames = {
+  harp2_fastmapol: "HARP2 FastMAPOL",
+  spexone_fastmapol: "SPEXone FastMAPOL", 
+  spexone_remotap: "SPEXone REMOTAP"
+};
+
+const typeNames = {
+  aeronet: "AERONET",
+  aeronet_oc: "AERONET OC",
+  man: "MAN",
+  pacepax: "PACE PAX",
+  pvst: "PVST",
+  earthcare: "EarthCare"
+};
+
+let allFiles = {};
+let currentSuite = 'harp2_fastmapol';
+let currentType = 'aeronet';
+let currentQF = 'all';
+let selectedFile = '';
+let availableQualityFlags = new Set();
+
+// Fetch file list from specific folder
+async function fetchFileList(folder) {
+  try {
+    const response = await fetch(baseURL + folder);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+    const matches = [...text.matchAll(/href="([^"]+\.html)"/g)];
+    return matches.map(m => m[1]).filter(f => f.startsWith('val_') && !f.includes('~'));
+  } catch (error) {
+    console.error(`Error fetching files from ${folder}:`, error);
+    return [];
+  }
+}
+
+// Extract quality flag patterns from filename
+function extractQualityFlags(filename) {
+  const flags = [];
+  
+  // Look for patterns like qf0, qf1, qf5, af5, etc.
+  const qfMatches = [...filename.matchAll(/([qa]f)(\d+)/g)];
+  qfMatches.forEach(match => {
+    const prefix = match[1]; // 'qf' or 'af'
+    const number = match[2]; // the number
+    flags.push(`${prefix}${number}`);
+  });
+  
+  return flags;
+}
+
+// Fetch all files from all folders and extract quality flags
+async function fetchAllFiles() {
+  document.getElementById('statusInfo').textContent = 'Loading files...';
+  availableQualityFlags.clear();
+  
+  for (const [suite, folderPath] of Object.entries(folderPaths)) {
+    allFiles[suite] = await fetchFileList(folderPath);
+    
+    // Extract quality flags from filenames
+    allFiles[suite].forEach(filename => {
+      const qfs = extractQualityFlags(filename);
+      qfs.forEach(qf => availableQualityFlags.add(qf));
+    });
+  }
+  
+  // Generate quality flag buttons
+  generateQualityFlagButtons();
+  
+  // Update display with current filters
+  updateFileListAndAutoSelect();
+  
+  const totalFiles = Object.values(allFiles).reduce((sum, files) => sum + files.length, 0);
+  document.getElementById('statusInfo').textContent = `Ready - ${totalFiles} files available`;
+  updateFileStats();
+}
+
+// Generate quality flag buttons based on available flags in filenames
+function generateQualityFlagButtons() {
+  const container = document.getElementById('qualityFlagButtons');
+  container.innerHTML = '';
+  
+  // Always add "All" button first
+  const allButton = document.createElement('button');
+  allButton.setAttribute('data-qf', 'all');
+  allButton.textContent = 'All';
+  allButton.className = 'active'; // Default selection
+  allButton.onclick = function() { selectQualityFlag(this); };
+  container.appendChild(allButton);
+  
+  // Sort quality flags and add buttons
+  const sortedFlags = Array.from(availableQualityFlags).sort((a, b) => {
+    // Extract prefix and number for proper sorting
+    const aMatch = a.match(/([qa]f)(\d+)/);
+    const bMatch = b.match(/([qa]f)(\d+)/);
+    
+    if (aMatch && bMatch) {
+      // First sort by prefix (af before qf)
+      if (aMatch[1] !== bMatch[1]) {
+        return aMatch[1].localeCompare(bMatch[1]);
+      }
+      // Then sort by number
+      return parseInt(aMatch[2]) - parseInt(bMatch[2]);
+    }
+    
+    return a.localeCompare(b);
+  });
+  
+  sortedFlags.forEach(qf => {
+    const button = document.createElement('button');
+    button.setAttribute('data-qf', qf);
+    button.textContent = qf;
+    button.onclick = function() { selectQualityFlag(this); };
+    container.appendChild(button);
+  });
+}
+
+// Select data suite (first row of buttons)
+function selectDataSuite(button) {
+  // Update button states
+  document.querySelectorAll('#dataSuiteButtons button').forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+  
+  currentSuite = button.dataset.suite;
+  updateColumnTitle();
+  updateQualityFlagButtons(); // Update QF buttons for new suite
+  updateFileListAndAutoSelect();
+  updateFileStats();
+}
+
+// Select validation type (second row of buttons)
+function selectValidationType(button) {
+  // Update button states
+  document.querySelectorAll('#validationTypeButtons button').forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+  
+  currentType = button.dataset.type;
+  updateColumnTitle();
+  updateQualityFlagButtons(); // Update QF buttons for new type
+  updateFileListAndAutoSelect();
+  updateFileStats();
+}
+
+// Select quality flag (third row of buttons)
+function selectQualityFlag(button) {
+  // Update button states
+  document.querySelectorAll('#qualityFlagButtons button').forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+  
+  currentQF = button.dataset.qf;
+  updateColumnTitle();
+  updateFileListAndAutoSelect();
+  updateFileStats();
+}
+
+// Update quality flag buttons based on current suite and type selection
+function updateQualityFlagButtons() {
+  const files = allFiles[currentSuite] || [];
+  const relevantFiles = files.filter(filename => matchesValidationType(filename, currentType));
+  
+  // Get quality flags available for current combination
+  const currentAvailableFlags = new Set();
+  relevantFiles.forEach(filename => {
+    const qfs = extractQualityFlags(filename);
+    qfs.forEach(qf => currentAvailableFlags.add(qf));
+  });
+  
+  // Update button visibility and state
+  const container = document.getElementById('qualityFlagButtons');
+  const buttons = container.querySelectorAll('button');
+  
+  buttons.forEach(button => {
+    const qf = button.dataset.qf;
+    if (qf === 'all') {
+      // Always show "All" button
+      button.style.display = 'inline-block';
+    } else if (currentAvailableFlags.has(qf)) {
+      // Show button if this QF is available in current files
+      button.style.display = 'inline-block';
+    } else {
+      // Hide button if QF not available
+      button.style.display = 'none';
+      // If this was the active button, switch to "All"
+      if (button.classList.contains('active')) {
+        button.classList.remove('active');
+        container.querySelector('[data-qf="all"]').classList.add('active');
+        currentQF = 'all';
+      }
+    }
+  });
+}
+
+// Update the column title based on current selections
+function updateColumnTitle() {
+  const qfDisplay = currentQF === 'all' ? 'All QF' : currentQF.toUpperCase();
+  const title = `${suiteNames[currentSuite]} - ${typeNames[currentType]} - ${qfDisplay}`;
+  document.getElementById('columnTitle').textContent = title;
+}
+
+// Check if filename matches validation type (expanded to include new types)
+function matchesValidationType(filename, type) {
+  if (type === 'aeronet') {
+    // For aeronet, exclude aeronet_oc files
+    return filename.includes('_aeronet_') && !filename.includes('_aeronet_oc_');
+  } else if (type === 'aeronet_oc') {
+    return filename.includes('_aeronet_oc_');
+  } else if (type === 'man') {
+    return filename.includes('_man_');
+  } else if (type === 'pacepax') {
+    return filename.includes('_pacepax_') || filename.includes('_pace_pax_');
+  } else if (type === 'pvst') {
+    return filename.includes('_pvst_');
+  } else if (type === 'earthcare') {
+    return filename.includes('_earthcare_');
+  }
+  return false;
+}
+
+// Check if filename matches quality flag
+function matchesQualityFlag(filename, qf) {
+  if (qf === 'all') return true;
+  
+  // Check if filename contains the exact quality flag pattern
+  const qfs = extractQualityFlags(filename);
+  return qfs.includes(qf);
+}
+
+// Update file list and automatically select first available file
+function updateFileListAndAutoSelect() {
+  updateFileList();
+  
+  // Get filtered files and auto-select the first one
+  const files = allFiles[currentSuite] || [];
+  const filteredFiles = files.filter(filename => 
+    matchesValidationType(filename, currentType) && 
+    matchesQualityFlag(filename, currentQF)
+  );
+  
+  if (filteredFiles.length > 0) {
+    const firstFile = filteredFiles[0];
+    const dropdown = document.getElementById('fileSelect');
+    dropdown.value = firstFile;
+    selectFile(firstFile);
+  } else {
+    // No files available, clear display
+    clearFileDisplay();
+  }
+}
+
+// Update file list based on current filters (without auto-selection)
+function updateFileList() {
+  const dropdown = document.getElementById('fileSelect');
+  dropdown.innerHTML = '<option value="">Select a file...</option>';
+  
+  const files = allFiles[currentSuite] || [];
+  const filteredFiles = files.filter(filename => 
+    matchesValidationType(filename, currentType) && 
+    matchesQualityFlag(filename, currentQF)
+  );
+  
+  if (filteredFiles.length > 0) {
+    // Group files by date for better organization
+    const filesByDate = {};
+    filteredFiles.forEach(file => {
+      const date = extractDate(file);
+      const dateKey = date || 'Unknown Date';
+      if (!filesByDate[dateKey]) filesByDate[dateKey] = [];
+      filesByDate[dateKey].push(file);
+    });
+    
+    // Add files organized by date
+    Object.keys(filesByDate).sort().forEach(date => {
+      if (filesByDate[date].length === 1) {
+        // Single file - add directly
+        const option = document.createElement('option');
+        option.value = filesByDate[date][0];
+        option.textContent = `${formatDisplayValue(date)} - ${filesByDate[date][0]}`;
+        dropdown.appendChild(option);
+      } else {
+        // Multiple files - create optgroup
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = formatDisplayValue(date);
+        
+        filesByDate[date].forEach((file, index) => {
+          const option = document.createElement('option');
+          option.value = file;
+          option.textContent = `${index + 1}. ${file}`;
+          optgroup.appendChild(option);
+        });
+        
+        dropdown.appendChild(optgroup);
+      }
+    });
+  } else {
+    const option = document.createElement('option');
+    option.value = "";
+    option.textContent = "No files available for this combination";
+    option.disabled = true;
+    dropdown.appendChild(option);
+  }
+}
+
+function extractDate(filename) {
+  // Try date range format first (2025-03-01-2025-10-31 or 20250301-20251031)
+  let rangeMatch = filename.match(/(\d{4}-\d{2}-\d{2})-(\d{4}-\d{2}-\d{2})/);
+  if (rangeMatch) return `${rangeMatch[1]} to ${rangeMatch[2]}`;
+  
+  rangeMatch = filename.match(/(\d{8})-(\d{8})/);
+  if (rangeMatch) {
+    const start = formatDateString(rangeMatch[1]);
+    const end = formatDateString(rangeMatch[2]);
+    return `${start} to ${end}`;
+  }
+  
+  // Try timestamp format (20240906T202704)
+  let timestampMatch = filename.match(/(\d{8}T\d{6})/);
+  if (timestampMatch) return timestampMatch[1];
+  
+  // Try single date formats (2025-11-09 or 20251109)
+  let dateMatch = filename.match(/(\d{4}-\d{2}-\d{2})/);
+  if (dateMatch) return dateMatch[1];
+  
+  dateMatch = filename.match(/(\d{8})/);
+  if (dateMatch) return formatDateString(dateMatch[1]);
+  
+  return null;
+}
+
+function formatDateString(dateStr) {
+  if (dateStr.length === 8) {
+    return `${dateStr.substr(0, 4)}-${dateStr.substr(4, 2)}-${dateStr.substr(6, 2)}`;
+  }
+  return dateStr;
+}
+
+function formatDisplayValue(value) {
+  if (!value) return value;
+  
+  // If it's already a date range, return as-is
+  if (value.includes(' to ')) return value;
+  
+  // If it's a timestamp format (20240906T202704)
+  if (value.length === 15 && value.includes('T')) {
+    const year = value.substr(0, 4);
+    const month = value.substr(4, 2);
+    const day = value.substr(6, 2);
+    const hour = value.substr(9, 2);
+    const minute = value.substr(11, 2);
+    const second = value.substr(13, 2);
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+  }
+  
+  return value;
+}
+
+// Select and display a specific file
+function selectFile(filename) {
+  const col = document.getElementById('mainColumn');
+  
+  if (!filename) {
+    clearFileDisplay();
+    return;
+  }
+  
+  selectedFile = filename;
+  const folderPath = folderPaths[currentSuite];
+  const date = extractDate(filename);
+  const qfDisplay = currentQF === 'all' ? 'All QF' : currentQF.toUpperCase();
+  
+  // Clear column and add selected file
+  col.innerHTML = `
+    <h2 id="columnTitle">${suiteNames[currentSuite]} - ${typeNames[currentType]} - ${qfDisplay}</h2>
+    <div class="file-container">
+      <div class="file-label">
+        ${suiteNames[currentSuite]} - ${typeNames[currentType]} - ${qfDisplay} - ${formatDisplayValue(date)}
+        <div class="file-stats">File: ${filename}</div>
+      </div>
+      <a href="${baseURL + folderPath + filename}" target="_blank">${filename}</a>
+      <div class="iframe-container">
+        <button class="expand-button" onclick="toggleIframeHeight(this)">Expand</button>
+        <iframe src="${baseURL + folderPath + filename}" onload="trackIframeLoad()"></iframe>
+      </div>
+    </div>
+  `;
+  
+  updateFileStats();
+}
+
+// Clear file display
+function clearFileDisplay() {
+  const col = document.getElementById('mainColumn');
+  const qfDisplay = currentQF === 'all' ? 'All QF' : currentQF.toUpperCase();
+  col.innerHTML = `
+    <h2 id="columnTitle">${suiteNames[currentSuite]} - ${typeNames[currentType]} - ${qfDisplay}</h2>
+    <div class="no-files">No files available for this combination</div>
+  `;
+  selectedFile = '';
+  
+  // Also clear the dropdown selection
+  document.getElementById('fileSelect').value = '';
+  
+  updateFileStats();
+}
+
+// Toggle iframe height
+function toggleIframeHeight(button) {
+  const iframe = button.nextElementSibling;
+  const currentHeight = iframe.style.height || '8000px';
+  
+  if (currentHeight === '8000px') {
+    iframe.style.height = '4000px';
+    button.textContent = 'Expand';
+  } else {
+    iframe.style.height = '8000px';
+    button.textContent = 'Shrink';
+  }
+}
+
+// Track iframe loading
+function trackIframeLoad() {
+  console.log(`Loaded iframe`);
+}
+
+// Update file statistics
+function updateFileStats() {
+  const files = allFiles[currentSuite] || [];
+  const filteredFiles = files.filter(filename => 
+    matchesValidationType(filename, currentType) && 
+    matchesQualityFlag(filename, currentQF)
+  );
+  const selectedIndicator = selectedFile ? '●' : '○';
+  const qfDisplay = currentQF === 'all' ? 'All QF' : currentQF.toUpperCase();
+  
+  document.getElementById('fileStats').textContent = 
+    `${selectedIndicator} ${suiteNames[currentSuite]} - ${typeNames[currentType]} - ${qfDisplay}: ${filteredFiles.length} files`;
+}
+
+// Clear all selections
+function clearAllSelections() {
+  document.getElementById('fileSelect').value = '';
+  clearFileDisplay();
+}
+
+// Open selected file in new tab
+function openSelectedInNewTab() {
+  if (!selectedFile) {
+    alert('No file selected. Please select a file from the dropdown first.');
+    return;
+  }
+  
+  const folderPath = folderPaths[currentSuite];
+  const url = baseURL + folderPath + selectedFile;
+  window.open(url, '_blank');
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", () => {
+  updateColumnTitle();
+  fetchAllFiles();
+});
+</script>
+</body>
+</html>

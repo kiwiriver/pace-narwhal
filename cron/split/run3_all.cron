@@ -1,0 +1,68 @@
+#!/bin/bash
+#SBATCH --job-name=aeronet
+#SBATCH --partition=research
+#SBATCH --exclude=poseidon-compute-[13]
+#SBATCH --threads-per-core=1
+
+# Activate your python environment
+mamba activate py3.12
+
+# Data folders (customize if needed)
+folder1='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data/'
+folder2='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
+python3='/accounts/mgao1/miniforge3/envs/py3.12/bin/python'
+
+# Use default dates if not provided
+#START_DATE=2025-10-01
+#END_DATE=2025-10-15
+
+if [[ -z "$START_DATE" || -z "$END_DATE" ]]; then
+    START_DATE=$(date -d '1 days ago' +%Y-%m-%d)
+    #END_DATE=$(date +%Y-%m-%d)
+    END_DATE=$START_DATE
+fi
+
+echo $START_DATE $END_DATA
+
+# Array of suites and corresponding versions
+declare -a SUITES=("AOD15=1" "SDA15=1" "LWN15=1" "ALM15=1" "HYB15=1")
+declare -a VERSIONS=("v3" "v3" "v3" "inv_v3" "inv_v3")
+
+#declare -a SUITES=("AOD15=1")
+#declare -a VERSIONS=("v3")
+
+echo "Processing date range $START_DATE to $END_DATE..."
+echo "Input folder: $folder1"
+echo "Split folder: $folder2"
+echo ""
+
+for idx in "${!SUITES[@]}"
+do
+    SUITE1=${SUITES[$idx]}
+    VERSION1=${VERSIONS[$idx]}
+    echo "-------------------------------------"
+    echo "Processing suite: $SUITE1 (version $VERSION1)"
+
+    # Download step
+    $python3 run1_download_main.py \
+        --suite1 "$SUITE1" \
+        --version1 "$VERSION1" \
+        --start_date "$START_DATE" \
+        --end_date "$END_DATE" \
+        --folder1 "$folder1"
+
+    # Split step
+    $python3 run2_split_main.py \
+        --suite1 "$SUITE1" \
+        --version1 "$VERSION1" \
+        --start_date "$START_DATE" \
+        --end_date "$END_DATE" \
+        --input_dir "$folder1" \
+        --output_dir "$folder2" \
+        --overwrite
+
+    echo "Done with $SUITE1"
+    echo ""
+done
+
+echo "All suites processed."

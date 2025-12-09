@@ -1,0 +1,10 @@
+###########download and split MAN data every saturday
+0 5 * * 6 cd /mnt/mfs/mgao1/develop/aeronet/aeronet_val01/t03_download_split_combine && bash run3_man.cron >> run3_man_cron.log 2>&1
+###########download and split AERONET data every day (two daya ago)
+0 5 * * * cd /mnt/mfs/mgao1/develop/aeronet/aeronet_val01/t03_download_split_combine && bash run3_all.cron >> run3_all_cron.log 2>&1
+###########mapol web: process harp2 fastmapol
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_rapid_fixed.cron harp2_fastmapol >> rapid_log_harp2_fastmapol.log 2>&1
+###########mapol web: process spexone fastmapol
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_rapid_fixed.cron spexone_fastmapol >> rapid_log_spexone_fastmapol.log 2>&1
+##########mapol web: process spexone remotap
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_rapid_fixed.cron spexone_remotap >> rapid_log_spexone_remotap.log 2>&1
