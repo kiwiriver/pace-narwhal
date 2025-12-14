@@ -7,7 +7,8 @@ from datetime import datetime
 
 # Add the path of the tools
 #mapol_path = os.path.expanduser('~/github/mapoltool')
-mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/mapoltool')
+#mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/mapoltool')
+mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/pace-narwhal')
 sys.path.append(mapol_path)
 
 from tools.aeronet_matchup_plot import plot_four_csv_maps
@@ -84,7 +85,7 @@ def main():
     share_csv = os.path.join(share_dir, share_file)
 
     #########################################################################################
-    logo_path = os.path.join(mapol_path, "img", 'narwhal_logo.png')
+    logo_path = os.path.join(mapol_path, "logo", 'narwhal_logo_v1.png')
     print("====logo location:", logo_path)
     if os.path.isfile(logo_path):
         print("====find the logo")

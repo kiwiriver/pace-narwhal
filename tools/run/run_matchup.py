@@ -17,7 +17,8 @@ from matplotlib import rcParams
 
 # Add the path of the tools
 #mapol_path = os.path.expanduser('~/github/mapoltool')
-mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/mapoltool')
+#mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/mapoltool')
+mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/pace-narwhal')
 sys.path.append(mapol_path)
 
 # Import your custom modules (preferably explicitly)
@@ -187,7 +188,7 @@ def main():
     
     ###################################################################################################
     t1=time.time()
-    logo_path = os.path.join(mapol_path, "img", 'narwhal_logo.png')
+    logo_path = os.path.join(mapol_path, "logo", 'narwhal_logo_v1.png')
     print("logo location:", logo_path)
     aeronet_matchup_summary(matchup_save_folder, matchup_save_folder2, html_save_folder,\
                             val_url, val_path1, loc_suite1, tspan, \
