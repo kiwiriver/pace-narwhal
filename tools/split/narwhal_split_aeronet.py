@@ -102,9 +102,13 @@ def split_aeronet_data(input_file, output_dir, column_names, skiprows=6,
         for _, row in chunk.iterrows():
             site = row[site_name]  # Get the site name
             date = row[date_name]  # Get the measurement date
+
+            #print(site_name, date_name)
+            #print(row)
             
             # Convert date to YYYYMMDD format
             try:
+                #print("date:", date)
                 formatted_date = datetime.strptime(date, "%d:%m:%Y").strftime("%Y%m%d")
             except ValueError:
                 # Skip rows with invalid date formats

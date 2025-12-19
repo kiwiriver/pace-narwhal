@@ -30,29 +30,32 @@ echo "Using file: $pyfile"
 
 ###########################
 #aeronet/man/ data location                                                     
+val_source='AERONET_OC'
 val_path='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
-loc_suite='AOD15'
+loc_suite='LWN15'
 val_url='none'
-#val_url="https://aeronet.gsfc.nasa.gov/aeronet_locations_v3921.txt"
 
-product="harp2_fastmapol"
+f0_file='f0_tsis_aeronet_oc_bw10.csv'
+
+#product="harp2_fastmapol"
 product="spexone_fastmapol"
 #product='spexone_remotap'  # Change this to switch between products
 
 if [ "$product" = "harp2_fastmapol" ]; then
     echo "Using HARP2 FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
     
 elif [ "$product" = "spexone_fastmapol" ]; then
     echo "Using SPEXone FastMAPOL configuration"
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
+    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
+
     
 elif [ "$product" = "spexone_remotap" ]; then
     echo "Using SPEXone RemoTAP configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,5]}'
+#    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,5]}'
     
 else
     echo "Error: Unknown product '$product'"
@@ -105,6 +108,7 @@ for day_offset in $(seq $first_day $last_day); do
     tspan_end=$tspan_start
 
     echo 'tspan start end' $tspan_start $tspan_end
+
     if [[ "$tspan_start" > "$yesterday" ]]; then
         echo "Date $tspan_start exceeds yesterday ($yesterday), skipping."
         continue
@@ -117,10 +121,13 @@ for day_offset in $(seq $first_day $last_day); do
     ls "$python_file"
     
     # Run the Python file
-    python "$python_file" --val_path ${val_path} --loc_suite ${loc_suite} --val_url ${val_url} --input_folder ${folder_name} --tspan_start $tspan_start --tspan_end $tspan_end \
-	   --product $product --all_rules "${all_rules}" --no_cloud
+    python "$python_file" --f0_file ${f0_file} --val_source ${val_source} --val_path ${val_path} \
+	   --loc_suite ${loc_suite} --val_url ${val_url} \
+	   --input_folder ${folder_name} --tspan_start $tspan_start --tspan_end $tspan_end \
+	   --product $product --all_rules "${all_rules}" --no_cloud --no_rm
+    #--save_subset_loc_path './' --no_rm
     #--no_cloud
-	
+
 done
 
 echo "Files created in folder: $folder_name"

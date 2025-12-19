@@ -11,17 +11,16 @@ from datetime import datetime
 mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/pace-narwhal')
 sys.path.append(mapol_path)
 
-from tools.aeronet_matchup_plot import plot_four_csv_maps
-from tools.aeronet_matchup_order import get_image_files,ordered_image_list
-from tools.aeronet_matchup_plot import plot_four_csv_maps
-from tools.narwhal_matchup_combine import aeronet_combine_summary
+from tools.narwhal_matchup_order import get_image_files,ordered_image_list
+from tools.narwhal_matchup_plot import plot_four_csv_maps
+from tools.narwhal_combine import narwhal_combine_summary
 from tools.narwhal_tools import print_threads_info, get_rules_str
 
 def main():
     print_threads_info()
     
     parser = argparse.ArgumentParser(description="Run PACE L2 daily processing script.")
-    parser.add_argument("--share_dir_base", type=str, default="/mnt/mfs/FILESHARE/meng_gao/pace/validation/summary/", 
+    parser.add_argument("--share_dir_base", type=str, default="/mnt/mfs/FILESHARE/meng_gao/pace/validation/share/", 
                help="Path to save in fileshare")
     parser.add_argument("--local_dir_base", type=str, default="/accounts/mgao1/mfs_pace/pace/validation/val5/test0/", 
                help="Path to read the matchup files")
@@ -57,32 +56,48 @@ def main():
     subset_rules = json.loads(args.subset_rules)
     
     # FIX: Correct variable names
+    chi2_max = subset_rules['chi2_max']
     nv_min = subset_rules['nv_min']      # Was: subset_rues
     min_aod = subset_rules['min_aod']    # Was: subset_rues
     max_aod = subset_rules['max_aod']    # Was: subset_rues
-    chi2_max = subset_rules['chi2_max']
+    
     
     all_rules_str = get_rules_str(all_rules)
-    print("rules:",all_rules_str)
+    print("    ====rules:",all_rules_str)
+    subset_str1 = f'subset_chi2max{chi2_max}_nv{nv_min}_minaod{min_aod}_maxaod{max_aod}'
+    print("    ====subset:",subset_str1)
 
-    #must follow current validation data structure
-    local_dir = os.path.join(local_dir_base, product1, f'pace_{val_source.lower()}_{all_rules_str}')
-    print('data location:', local_dir)
+    #load data from matchup_daily_folder, already exist
+    common_path0 = os.path.join(product1, f'{val_source.lower()}', f'criteria_{all_rules_str}')
     
-    html_str = f"{all_rules_str}_subset_chi2max{chi2_max}_nvmin{nv_min}_aodmin{min_aod}_aodmax{max_aod}"
-    print("html str", html_str)
+    matchup_daily_folder = os.path.join(local_dir_base, common_path0, 'daily', 'matchup')
+    if os.path.exists(matchup_daily_folder):
+        print("Found the matchup folder")
+    else:
+        print("Folder does not exist:", matchup_daily_folder)
     
+    #save summary to the summary folder at specific date range
+    common_path1 = os.path.join(common_path0, 'summary', f"date_{date_range}",subset_str1)
+    
+    #### summary folder
+    summary_folder_csv = os.path.join(local_dir_base, common_path1, 'csv')
+    summary_folder_plot = os.path.join(local_dir_base, common_path1, 'plot')
+    summary_folder_html = os.path.join(local_dir_base, common_path1)
     # HTML output path
-    share_dir = os.path.join(share_dir_base, product1, 'html')
-    os.makedirs(share_dir, exist_ok=True)
-    share_file = f"val_{val_source.lower()}_{date_range}_{html_str}.html"
-    share_html = os.path.join(share_dir, share_file)
+    share_folder_csv = os.path.join(share_dir_base,common_path1, 'csv')
+    share_folder_html = os.path.join(share_dir_base, common_path1)
+
+    print("    ====path to locate csv:", matchup_daily_folder)
+    print("    ====path to share html:", share_folder_html)
+
+    #make sure the folder exist
+    path_dict=[matchup_daily_folder, \
+               summary_folder_csv, summary_folder_plot, summary_folder_html ,\
+               share_folder_csv, share_folder_html]
+
     
-    # CSV output path
-    share_dir = os.path.join(share_dir_base, product1, 'csv')
-    os.makedirs(share_dir, exist_ok=True)
-    share_file = f"val_{val_source.lower()}_{date_range}_{html_str}.csv"
-    share_csv = os.path.join(share_dir, share_file)
+    for path1 in path_dict:
+        os.makedirs(path1, exist_ok=True)
 
     #########################################################################################
     logo_path = os.path.join(mapol_path, "logo", 'narwhal_logo_v1.png')
@@ -92,10 +107,12 @@ def main():
     else:
         print("====missing logo")
         logo_path=None
-              
-    aeronet_combine_summary(product1, local_dir, tspan,\
+
+
+    
+    narwhal_combine_summary(product1, path_dict, tspan,\
                             chi2_max, nv_min, min_aod, max_aod, \
-                            share_html, share_csv, all_rules, val_source=val_source, logo_path=logo_path)
+                            all_rules, val_source=val_source, logo_path=logo_path)
     
 if __name__ == '__main__':
     main()

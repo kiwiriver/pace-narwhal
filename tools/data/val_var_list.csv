@@ -37,6 +37,7 @@ AERONET_OC,LWN15,Aerosol_Optical_Depth,nm],aot_wv,wvv
 AERONET_OC,LWN15,Rrs_f/Q_wv,nm],Rrs2_mean_wv,wvv
 AERONET_OC,LWN15,Chlorophyll-a,Chlorophyll-a,chla,None
 AERONET_OC,LWN15,Wind_Speed(m/s),Wind_Speed(m/s),wind_speed,None
+AERONET_OC,SEABASS,rrs,rrs,Rrs2_mean_wv,wvv
 MAN,MAN_AOD15_series,AOD,nm,aot_wv,wvv
 MAN,MAN_AOD15_series,440-870nm_Angstrom_Exponent,440-870nm_Angstrom_Exponent,angstrom_440_870,None
 MAN,MAN_SDA15_series,aot_fine_wv,,aot_fine_wv,wvv

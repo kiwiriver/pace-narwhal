@@ -28,18 +28,18 @@ val_path='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
 loc_suite='HSRL2_R1'
 
 product="harp2_fastmapol"
-product="spexone_fastmapol"
-product='spexone_remotap'  # Change this to switch between products
+#product="spexone_fastmapol"
+#product='spexone_remotap'  # Change this to switch between products
 
 if [ "$product" = "harp2_fastmapol" ]; then
     echo "Using HARP2 FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90],"quality_flag":[0,5]}'
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90],"quality_flag":[0,0]}'
+    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90],"quality_flag":[0,0]}'
     
 elif [ "$product" = "spexone_fastmapol" ]; then
     echo "Using SPEXone FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170], "quality_flag":[0,5]}'
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
+    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
 
     
 elif [ "$product" = "spexone_remotap" ]; then
@@ -59,8 +59,8 @@ echo "Rules: $all_rules"
 
 ###########################
 
-appkey="KEY_REDACTED"
-api_key="KEY_REDACTED"
+appkey="d20599e8b5a793c0f08baed6c5d689eb5ef1c1c0"
+api_key="sk-5X0dF2dZ4Labe874WfPN2A"
 
 val_source='PACE_PAX'
 start_date="2024-09-01"
@@ -77,7 +77,7 @@ batch_size=1
 array_id=$SLURM_ARRAY_TASK_ID
 
 #array_id=29 #2024/09/30
-array_id=26 #2024/09/27
+#array_id=26 #2024/09/27
 
 first_day=$(( array_id * batch_size ))
 last_day=$(( first_day + batch_size - 1 ))

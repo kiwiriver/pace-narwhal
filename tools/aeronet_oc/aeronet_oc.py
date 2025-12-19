@@ -4,21 +4,21 @@ read integrated df0 file: df0=pd.read_csv(f0_file,index_col=0)
 """
 import numpy as np
 import pandas as pd
+import pvlib.solarposition as sunpos
 
-
-def get_df0_avg(df0, bandwidth=10):
+def get_df0_avg(df0, time=None, bandwidth=10, \
+        wvv2=[340,  380,  400,  412,  440,  443,  490,  500,  510,  531,  532,
+        551,  555,  560,  620,  667,  675,  681,  709,  779,  865,  870, 1020]):
     """
     get df0 with integration over all the aeronet oc bands in the file (some may be not used
     wvv2 are all the wavelength get from aeronet oc files
+
+    correct for sun-earth distance, need verify with the l1c file attribute
     """
 
     #path5='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data/LWN15/'
     #file5='aeronet_v3_LWN15_ALL_20251001_20251001.txt'
     #wvv2=get_aeronet_oc_wv(path5+file5)
-    
-    wvv2=[340,  380,  400,  412,  440,  443,  490,  500,  510,  531,  532,
-        551,  555,  560,  620,  667,  675,  681,  709,  779,  865,  870,
-       1020]
     
     bvv2 = np.repeat(bandwidth, len(wvv2))
     
@@ -27,7 +27,14 @@ def get_df0_avg(df0, bandwidth=10):
     df2=pd.DataFrame()
     df2['wv']=wvv2
     df2['bv']=bvv2
-    df2['f0']=f0avg2
+    if time is not None:
+        time_index = pd.to_datetime([time])
+        r0 = sunpos.nrel_earthsun_distance(time_index)
+        df2['f0']=f0avg2/r0**2
+        print("sun earth distance {r0} at {time}")
+    else:
+        df2['f0']=f0avg2
+        
     df2.to_csv(f'f0_tsis_aeronet_oc_bw{bandwidth}.csv')
     
     return df2
@@ -58,7 +65,8 @@ def get_aeronet_oc_rrs(df0, df3, key1='Lwn_f/Q[', key2='Exact_Wavelengths(um)_')
     """
     Rrs = Lwn/F0, 
 
-    Input: df0 contains f0 already integrated at the corresponding wavelength and bandwidth
+    Input: df0: f0 data, which contains f0 already integrated at the corresponding wavelength and bandwidth
+           df3: aeronet bands
     
     No need to divide f0*cos(sz), 
     if needed sz can be found:
@@ -74,7 +82,7 @@ def get_aeronet_oc_rrs(df0, df3, key1='Lwn_f/Q[', key2='Exact_Wavelengths(um)_')
     lwn1 = df3[key1v].values
 
     #at the selected wavelength
-    key2v=get_aeronet_oc_key(key2, df3)
+    key2v = get_aeronet_oc_key(key2, df3)
     wvv2 = np.array([np.int32(keyt.split(key2)[1]) for keyt in key2v])
 
     try:

@@ -26,7 +26,7 @@ from maap.maap import MAAP
 from pystac_client import Client
 from datetime import datetime, timedelta
 
-from tools.detection_download import format_tspan
+from tools.orca_download import format_tspan
 from tools.narwhal_pace import get_pace_data_info
 
 def run_earthcare_matchup(product, input_folder, tspan, bbox=(-180, 0, 180, 80), limit=50000, 

@@ -22,11 +22,8 @@ mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/pace-narwhal')
 sys.path.append(mapol_path)
 
 # Import your custom modules (preferably explicitly)
-from tools.aeronet_matchup_summary import aeronet_matchup_summary
+from tools.narwhal_matchup import narwhal_matchup_daily
 from tools.narwhal_tools import print_threads_info, get_rules_str
-
-from tools.validation_earthcare_matchup import run_earthcare_matchup
-from tools.validation_earthcare_csv import split_earthcare_csv
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -39,7 +36,16 @@ def main():
     #first round mathchups to find center
     #current, center 5km, 2pixel, 1hour
     #plan: 5km, 10pixel, 2hour
-        
+
+    Notes:
+    LWN15: 
+        when compute Rrs, F0 need to be integrated using:
+            df0=pd.read_csv(f0_file,index_col=0)
+            #average with bandwidth
+            #df0=get_df0_avg(df0, bandwidth=10)
+    
+        Note that the input file is already integrated
+    
     """
     print_threads_info()
     
@@ -59,8 +65,9 @@ def main():
     
     parser.add_argument("--loc_suite", type=str, default="AOD15", 
                help="if search loc for AERONET, use AOD15 in default, for MAN: MAN_AOD15_series")
-    parser.add_argument("--f0_file", type=str, default='f0_tsis_aeronet_oc_bw10.csv', 
-               help="located at the data folder")
+    
+    #parser.add_argument("--f0_file", type=str, default='f0_tsis_aeronet_oc_bw10.csv', 
+    #           help="located at the data folder")
     
     parser.add_argument("--tspan_start", type=str, help="Start date of the time span (YYYY-MM-DD).")
     parser.add_argument("--tspan_end", type=str, help="End date of the time span (YYYY-MM-DD).")
@@ -100,10 +107,11 @@ def main():
     
     if(val_source=='AERONET_OC'):
         print("===read f0 is AERONET_OC===")
-        f0_file = args.f0_file
-        f0_file = os.path.join(mapol_path, "data", f0_file)
-        print("****Found f0_file:", f0_file)
+        f0_file = os.path.join(mapol_path, "tools/data", 'f0_tsis_aeronet_oc_bw10.csv')
+        print("****Found f0_file, already integrated:", f0_file)
         df0=pd.read_csv(f0_file,index_col=0)
+        #average with bandwidth
+        #df0=get_df0_avg(df0, bandwidth=10)
     else:
         df0=None
 
@@ -129,47 +137,12 @@ def main():
     appkey=<appkey>
     api_key=<api_key>
 
-    save_path1 = os.path.join(input_folder,product1, f"pace_{val_source.lower()}_{all_rules_str}")
-    print("   ***path to save data:", save_path1)
     
+    save_path1 = os.path.join(input_folder,product1, f"pace_{val_source.lower()}_{all_rules_str}", "daily")
+    print("   ***path to save daily data:", save_path1)
+
     #######################################################################################################
-    #for earchcare data, download data, and create csv in split folder
-    #need a few new packages to be installed
-    #also the pace l2 files are also downloaded already
-    if(val_source.upper()=='EARTHCARE'):
-        #product1 = "spexone_fastmapol"  # or whatever product name you use
-        #input_folder = "/accounts/mgao1/mfs_pace/pace/validation/val5/test0/"
-        #tspan = ("2024-09-01", "2024-09-02")
-        
-        bbox = (-180, 0, 180, 80)
-        token_path='./earthcare_credentials_v20251205.txt'
-        shortnames_earthcare1="ATL_ALD_2A"
-    
-        matchups, earthcare_save_folder = run_earthcare_matchup(
-            product=product1,
-            input_folder=input_folder,
-            tspan=tspan,
-            bbox=bbox,
-            limit=50000,
-            shortnames_earthcare1=shortnames_earthcare1,
-            token_path=token_path,
-            verbose=True
-        )
-
-        #save the csv file here
-        if(len(matchups)>0):
-            folder1='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
-            output_file_path=os.path.join(folder1, 'ATL_ALD_2A')
-            print("   ***split earth data into csv into:", output_file_path)
-            os.makedirs(output_file_path, exist_ok=True)
-            
-            split_earthcare_csv(earthcare_save_folder, output_file_path, tspan=tspan, \
-                                    bbox=(-180, -80, 180, 80), filter_by_time_bbox = False, \
-                                   csv_filename='EarthCARE.csv')
-        else:
-            print("abord, not valid retrievals")
-            sys.exit(1)
-
+    #if(val_source.upper()=='EARTHCARE'): do the matchup, in a separate routine
     #######################################################################################################
     
     #### download active aeronet site #
@@ -190,7 +163,7 @@ def main():
     t1=time.time()
     logo_path = os.path.join(mapol_path, "logo", 'narwhal_logo_v1.png')
     print("logo location:", logo_path)
-    aeronet_matchup_summary(matchup_save_folder, matchup_save_folder2, html_save_folder,\
+    narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_folder,\
                             val_url, val_path1, loc_suite1, tspan, \
                             product1, appkey, api_key, \
                             save_path1, l2_data_folder, \

@@ -50,7 +50,7 @@ def subset_time_pace_aeronet(folder1, site1v, pace_df_mean_all, pace_df_std_all,
     count=0
     for site1 in site1v[:]:
         try:
-            # Read aeronet/man data
+        # Read aeronet/man data
             aeronet_df1, site_name = get_val_df(val_source, folder1, site1)
             
             #select relevant variables
@@ -90,8 +90,12 @@ def subset_time_pace_aeronet(folder1, site1v, pace_df_mean_all, pace_df_std_all,
     
     
         #turn off except
-        except:
-            print("---exception countered: canot find this site:", site1)
+        #except:
+        #    print("---exception countered: canot find valid data from this site:", site1)
+        except Exception as e:
+            print(f"  Error processing site {site1}: {str(e)}")
+            print("  Full traceback:")
+            traceback.print_exc()
 
     try:
         # Concatenate into single DataFrames

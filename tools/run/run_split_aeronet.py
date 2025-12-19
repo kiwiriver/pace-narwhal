@@ -3,9 +3,9 @@ import sys
 from datetime import datetime, timedelta
 from tqdm import tqdm
 #modify the library path on different machine
-mapol_path=os.path.expanduser('~/github/mapoltool')
+mapol_path = os.path.expanduser('/mnt/mfs/mgao1/analysis/github/pace-narwhal/')
 sys.path.append(mapol_path)
-from tools.aeronet_batch_split import *
+from tools.narwhal_split_aeronet import *
 
 path0='./aeronet_data_split/'
 overwrite=True

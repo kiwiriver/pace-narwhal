@@ -4,7 +4,7 @@ from PIL import Image
 import os
 import re
 from collections import defaultdict
-from tools.aeronet_matchup_html_tool import *
+from tools.narwhal_matchup_html_tool import *
 
 ################ simple function just put image together
 def create_html_with_embedded_images(folder_path, ordered_files, output_html='images_embedded.html', 

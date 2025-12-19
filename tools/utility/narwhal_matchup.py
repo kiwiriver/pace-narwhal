@@ -17,6 +17,7 @@ import pickle
 import glob
 import shutil
 import sys
+import traceback
 
 import numpy as np
 import pandas as pd
@@ -37,13 +38,13 @@ from tools.narwhal_pace import download_pace_data
 from tools.aeronet_matchup_search import aeronet_search, plot_search
 from tools.aeronet_matchup_format import clean_pace_data
 
-from tools.aeronet_matchup_html_suite import create_html_with_embedded_images
-from tools.aeronet_matchup_order import get_image_files,ordered_image_list
-from tools.aeronet_tools import get_rules_str, get_filter_rules, clean_value
+from tools.narwhal_matchup_html_suite import create_html_with_embedded_images
+from tools.narwhal_matchup_order import get_image_files,ordered_image_list
+from tools.narwhal_tools import get_rules_str, get_filter_rules, clean_value
 
 from tools.aeronet_oc import get_f0_tsis
 
-def aeronet_matchup_summary(matchup_save_folder, matchup_save_folder2, html_save_folder,\
+def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_folder,\
                             val_url, val_path1, loc_suite1, tspan, \
                             product1, appkey, api_key, \
                             save_path1, l2_data_folder, \
@@ -209,7 +210,6 @@ def aeronet_matchup_summary(matchup_save_folder, matchup_save_folder2, html_save
     wv550 = min(list(wvv), key=lambda x: abs(x - target))
     print("make plots for wavelenth close to 550", wv550)
 
-
     #### get the list of date:
     date_list = sorted(set(pace_df_mean_all['datetime'].dt.strftime('%Y-%m-%d').tolist()))
 
@@ -235,9 +235,12 @@ def aeronet_matchup_summary(matchup_save_folder, matchup_save_folder2, html_save
     current_module_path = Path(__file__).parent.absolute()
     print("Current module directory:", current_module_path)
 
-    df_var = pd.read_csv(os.path.join(current_module_path, 'val_var_list.csv'),skipinitialspace=True)
+    ############################################################################
+    csv_path=os.path.join(current_module_path,'../data/val_var_list.csv')
+    df_var = pd.read_csv(csv_path, skipinitialspace=True)
     # Filter by val_source
     df_var1 = df_var.loc[df_var.val_source == val_source]
+
 
     # Process each row using itertuples (faster than iterrows)
     for row in df_var1.itertuples(index=False):
@@ -467,10 +470,14 @@ def process_all_folders(folder1v, site1v, pace_df_mean_all, pace_df_std_all, wvv
                 pace_df_std_alls.append(pace_df_std_all)
                 print(f"  Added PACE std data: {pace_df_std_all.shape}")
 
-        #turn off except        
+        #turn off except 
         except Exception as e:
             print(f"  Error processing folder {folder1}: {str(e)}")
-            continue
+            print("  Full traceback:")
+            traceback.print_exc()
+        #except Exception as e:
+        #    print(f"  Error processing folder {folder1}: {str(e)}")
+        #    continue
     
     # Combine all DataFrames
     print("\nCombining DataFrames...")
@@ -560,7 +567,10 @@ def get_matchup_results(out_dir1, out_dir2, tspan, date_list, \
                 x, y, label=var1, title=title1, fileout=fileout1,
                 xlabel="Validation Target", ylabel="PACE"
             )
-    except:
-        print("nothing to plot")
+
+    except Exception as e:
+            print(f"  failed to plot: {str(e)}")
+            print("  Full traceback:")
+            traceback.print_exc()
         
     return aeronet_df_mean_all, aeronet_df_std_all, pace_df_mean_all, pace_df_std_all

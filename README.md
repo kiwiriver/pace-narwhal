@@ -17,6 +17,8 @@ This repository is developed and maintained by the **PACE FastMAPOL team**. Any 
 
 ## Live Examples
 
+## Todo
+- define all the format externally and update in the data_split folder, maybe define a centrallize file, currently all the changes are in the code files, may be forgetten, not easy if we only want to update the target files
 ---
 
 ## API Key Configuration

@@ -65,8 +65,8 @@ echo "Rules: $all_rules"
 
 ###########################
 
-appkey="KEY_REDACTED"
-api_key="KEY_REDACTED"
+appkey="d20599e8b5a793c0f08baed6c5d689eb5ef1c1c0"
+api_key="sk-5X0dF2dZ4Labe874WfPN2A"
 
 val_source='MAN'
 start_date="2024-03-01"

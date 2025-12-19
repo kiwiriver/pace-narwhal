@@ -9,8 +9,7 @@ import pandas as pd
 import earthaccess
 from matplotlib import rcParams
 from datetime import datetime, timedelta
-from tools.detection_util import setup_data
-from tools.detection_download import download_l2_cloud, download_l2_web
+from tools.orca_utility import setup_data
 
 def get_aeronet_file(path, aeronet_url):
     """

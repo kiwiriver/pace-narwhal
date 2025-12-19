@@ -1,7 +1,8 @@
+import re
+import os
 import numpy as np
 import pandas as pd
-import re
-import numpy as np
+
 from scipy.interpolate import UnivariateSpline
 from tools.aeronet_matchup_sda import get_sda_aod
 from tools.aeronet_oc import get_aeronet_oc_rrs
@@ -283,7 +284,7 @@ def format_aeronet_df(aeronet_df1, input_wavelengths = [440, 550, 670, 870], \
         else:
             target_cols = [c for c in aeronet_df1.columns \
                            if c.startswith(old_start1) and c.endswith(old_end1)]
-            print("aeronet_df1.columns", list(aeronet_df1.columns))
+            #print("aeronet_df1.columns", list(aeronet_df1.columns))
             print("new_start1", new_start1)
             print("target_cols", target_cols)
             aeronet_df2[new_start1]=aeronet_df1[target_cols]

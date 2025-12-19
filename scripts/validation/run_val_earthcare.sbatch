@@ -4,13 +4,8 @@
 #SBATCH --partition=research
 #SBATCH --threads-per-core=1
 #SBATCH --cpus-per-task=8
-#SBATCH --array=0-100 
-
-##SBATCH --array=0-10%5 #concurrnt 3
-##SBATCH --array=0-100%10 #concurrnt 10
-
-### rerun failed case
-###SBATCH --array=0,1,7,8
+##SBATCH --array=0-30
+#SBATCH --array=0-100
 
 # Your env activation
 mamba activate py3.12
@@ -29,11 +24,9 @@ echo "Using file: $pyfile"
 
 
 ###########################
-#aeronet/man/ data location                                                     
+#aeronet/man/ data location
 val_path='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
-loc_suite='AOD15'
-val_url='none'
-#val_url="https://aeronet.gsfc.nasa.gov/aeronet_locations_v3921.txt"
+loc_suite='ATL_ALD_2A'
 
 product="harp2_fastmapol"
 product="spexone_fastmapol"
@@ -41,19 +34,20 @@ product="spexone_fastmapol"
 
 if [ "$product" = "harp2_fastmapol" ]; then
     echo "Using HARP2 FastMAPOL configuration"
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90],"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90],"quality_flag":[0,0]}'
     
 elif [ "$product" = "spexone_fastmapol" ]; then
     echo "Using SPEXone FastMAPOL configuration"
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170], "quality_flag":[0,5]}'
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
+
     
 elif [ "$product" = "spexone_remotap" ]; then
     echo "Using SPEXone RemoTAP configuration"
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,5]}'
-    
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,5]}'
+#    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[170,170], "nv_dolp":[170,170],"quality_flag":[0,0]}'
+
 else
     echo "Error: Unknown product '$product'"
     echo "Available options: harp2_fastmapol, spexone_fastmapol, spexone_remotap"
@@ -69,21 +63,18 @@ echo "Rules: $all_rules"
 appkey="d20599e8b5a793c0f08baed6c5d689eb5ef1c1c0"
 api_key="sk-5X0dF2dZ4Labe874WfPN2A"
 
-start_date="2024-03-01"
+val_source='EARTHCARE'
+start_date="2024-05-28"
+#start_date="2024-09-06"
+#start_date="2024-08-02"
 yesterday=$(date -d "yesterday" +"%Y-%m-%d")
 num_days=$(( ($(date -d "$yesterday" +%s) - $(date -d "$start_date" +%s)) / 86400 + 1 ))
 
-#batch_size=70
-#batch_size=7
-#batch_size=600
-#batch_size=100
-#batch_size=200
-batch_size=1
+batch_size=6
+#batch_size=1
 
 array_id=$SLURM_ARRAY_TASK_ID
-
-#array_id=95 #2024/06/04
-array_id=189 #2024/09/06
+#array_id=1
 
 first_day=$(( array_id * batch_size ))
 last_day=$(( first_day + batch_size - 1 ))
@@ -117,10 +108,11 @@ for day_offset in $(seq $first_day $last_day); do
     ls "$python_file"
     
     # Run the Python file
-    python "$python_file" --val_path ${val_path} --loc_suite ${loc_suite} --val_url ${val_url} --input_folder ${folder_name} --tspan_start $tspan_start --tspan_end $tspan_end \
-	   --product $product --all_rules "${all_rules}" --no_cloud
+    python "$python_file" --val_path ${val_path} --loc_suite ${loc_suite} --input_folder ${folder_name} --tspan_start $tspan_start --tspan_end $tspan_end \
+	   --product $product --all_rules "${all_rules}" --no_cloud --val_source "${val_source}" 
     #--no_cloud
-	
+    #--no_rm
+
 done
 
 echo "Files created in folder: $folder_name"
