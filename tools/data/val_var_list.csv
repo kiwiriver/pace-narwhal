@@ -33,10 +33,10 @@ AERONET,HYB15,VolC-F,VolC-F,vd_fine,None
 AERONET,HYB15,VolC-C,VolC-C,vd_coarse,None
 AERONET,HYB15,Sphericity_Factor,Sphericity_Factor,sph, None
 AERONET,HYB15,Sphericity_Factor,Sphericity_Factor,sph_coarse,None
-AERONET_OC1,LWN15,Aerosol_Optical_Depth,nm],aot_wv,wvv
-AERONET_OC1,LWN15,Rrs_f/Q,nm],Rrs2_mean_wv,wvv
-AERONET_OC1,LWN15,Chlorophyll-a,Chlorophyll-a,chla,None
-AERONET_OC1,LWN15,Wind_Speed(m/s),Wind_Speed(m/s),wind_speed,None
+AERONET_OC,LWN15,Aerosol_Optical_Depth,nm],aot_wv,wvv
+AERONET_OC,LWN15,Rrs_f/Q,nm],Rrs2_mean_wv,wvv
+AERONET_OC,LWN15,Chlorophyll-a,Chlorophyll-a,chla,None
+AERONET_OC,LWN15,Wind_Speed(m/s),Wind_Speed(m/s),wind_speed,None
 AERONET_OC,SEABASS,rrs,,Rrs2_mean_wv,wvv
 MAN,MAN_AOD15_series,AOD,nm,aot_wv,wvv
 MAN,MAN_AOD15_series,440-870nm_Angstrom_Exponent,440-870nm_Angstrom_Exponent,angstrom_440_870,None

@@ -1,7 +1,9 @@
+
+import re
+import traceback
 import numpy as np
 import pandas as pd
-import re
-import numpy as np
+
 from scipy.interpolate import UnivariateSpline
 from tools.aeronet_matchup_sda import get_sda_aod
 from tools.aeronet_oc import get_aeronet_oc_rrs

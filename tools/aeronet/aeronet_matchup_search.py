@@ -1,12 +1,17 @@
-import pandas as pd
-import numpy as np
-from netCDF4 import Dataset
-from scipy.spatial import cKDTree
 import re
 import math
 import time
+import traceback
+
+
+
 from tqdm import tqdm
 import xarray as xr
+import pandas as pd
+import numpy as np
+
+from netCDF4 import Dataset
+from scipy.spatial import cKDTree
 
 import matplotlib.pyplot as plt
 import cartopy
@@ -44,6 +49,34 @@ def plot_search(indexvv, boundingboxv, outfile=None):
     plt.title('Validation Matchup Locations')
     if(outfile):
         plt.savefig(outfile, dpi=300)
+
+def check_netcdf_file(nc_path):
+    """
+    Check if NetCDF file is accessible and not corrupted
+    """
+    print("*********************************************************************")
+    try:
+        # Check if file exists and has reasonable size
+        if not os.path.exists(nc_path):
+            return False, "File does not exist"
+        
+        file_size = os.path.getsize(nc_path)
+        if file_size == 0:
+            return False, "File is empty"
+        
+        if file_size < 1000:  # Very small file, likely corrupted
+            return False, f"File too small ({file_size} bytes)"
+        
+        # Try to open just the file info without loading data
+        with xr.open_dataset(nc_path, decode_times=False) as ds:
+            # Check if we can access basic attributes
+            _ = ds.attrs
+            _ = list(ds.variables.keys())
+        
+        return True, "****File OK*****"
+    
+    except Exception as e:
+        return False, str(e)
         
 def aeronet_search(aeronet_df1, filev, search_center_radius = 10, \
                    aeronet_lon_var='Longitude(decimal_degrees)', aeronet_lat_var='Latitude(decimal_degrees)', \
@@ -66,6 +99,8 @@ def aeronet_search(aeronet_df1, filev, search_center_radius = 10, \
     boundingboxv={}
     
     for nc_path in tqdm(filev[:]):
+        print(nc_path)
+        check_netcdf_file(nc_path)
         try:
             datetime1 = re.search(r'(\d{8}T\d{6})', nc_path).group(1)
             dataset = xr.open_datatree(nc_path, group='geolocation_data')
@@ -77,8 +112,11 @@ def aeronet_search(aeronet_df1, filev, search_center_radius = 10, \
             
             indexv = get_match(datetime1, lon_variable, lat_variable, lon_loc, lat_loc, namev, search_center_radius = search_center_radius)
             indexvv[datetime1]=indexv
-        except:
-            print("failed to search:", nc_path)
+
+        except Exception as e:
+            print(f"  Error searching path {nc_path}: {str(e)}")
+            print("  Full traceback:")
+            traceback.print_exc()
         
     t2=time.time()
     print("total time cost", t2-t1)
