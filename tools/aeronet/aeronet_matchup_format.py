@@ -189,8 +189,10 @@ def get_val_df(val_source, folder1, site1):
         exit
         
     aeronet_df1 = aeronet_df1.replace(-999, np.nan)
+    #why comment out?
     #aeronet_df1 = aeronet_df1.dropna(axis=1, how='all')
-
+    aeronet_df1 = aeronet_df1.dropna(axis=1, how='all')
+    
     return aeronet_df1, site_name
 
 def format_aeronet_df(aeronet_df1, input_wavelengths = [440, 550, 670, 870], \
@@ -276,7 +278,9 @@ def format_aeronet_df(aeronet_df1, input_wavelengths = [440, 550, 670, 870], \
     else: 
         #map to the pace wavelength
         if input_wavelengths is not None and isinstance(input_wavelengths, (list, np.ndarray)):
-            
+
+            #interpolate data into new set of wavelength: input_wavelengths
+            #original wavelength will be save
             aeronet_df2, orig_wvv= get_aeronet_fit_spline(aeronet_df1, aeronet_df2, \
                                                           input_wavelengths, \
                                   old_start1=old_start1, old_end1=old_end1, new_start1=new_start1)

@@ -18,7 +18,7 @@ def extract_number(s):
 
 def get_aeronet_key(aeronet_df1, old_start1, old_end1):
     """
-    get the keys
+    get the keys, note that if ended with wavelength, just set old_end1=''
     """
     # Extract wavelength and column mapping
     target_cols = [c for c in aeronet_df1.columns if c.startswith(old_start1) and c.endswith(old_end1)]
@@ -27,7 +27,6 @@ def get_aeronet_key(aeronet_df1, old_start1, old_end1):
     #print('original wavelength', orig_wavelengths)
     
     return target_cols, orig_wavelengths
-    
     
 def get_aeronet_fit_spline(aeronet_df1, aeronet_df2, input_wavelengths, \
                            old_start1='AOD_', old_end1='nm', new_start1='aot_wv'):

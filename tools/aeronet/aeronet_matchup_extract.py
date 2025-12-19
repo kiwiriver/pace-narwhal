@@ -52,13 +52,17 @@ def subset_time_pace_aeronet(folder1, site1v, pace_df_mean_all, pace_df_std_all,
         try:
         # Read aeronet/man data
             aeronet_df1, site_name = get_val_df(val_source, folder1, site1)
+            #print(site_name)
+            #print(aeronet_df1)
             
             #select relevant variables
+            #integrate orig_wavelengths into wvv
             aeronet_df2, orig_wavelengths = format_aeronet_df(aeronet_df1, input_wavelengths=wvv,\
                                    old_start1=old_start1, old_end1=old_end1, new_start1=new_start1,\
                                                              input_is_sda=input_is_sda, \
                                                               site_name=site_name, \
                                                               df0=df0)
+            #print(aeronet_df2)
             
             print("**wavelength in aeronet or man:", orig_wavelengths)
             
