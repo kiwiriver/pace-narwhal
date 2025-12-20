@@ -92,15 +92,20 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
               'MAN_AOD15_series':['aot_wv','angstrom_440_870'],\
               'MAN_SDA15_series':['aot_fine_wv','aot_coarse_wv'],\
               'LWN15':['aot_wv','Rrs2_mean_wv','wind_speed','chla'],\
+              'SEABASS':['Rrs2_mean_wv'],\
               'HSRL2_R1':['aot550', 'wind_speed', 'alh'],\
               'ATL_ALD_2A':['alh'],\
              }
 
     #pair_dic={}
     
-    pair_dic={'HSRL2_R1':['aot550', 'wind_speed', 'alh']}
+    #pair_dic={'HSRL2_R1':['aot550', 'wind_speed', 'alh']}
 
-    pair_dic={'ATL_ALD_2A':['alh']}
+    pair_dic={'LWN15':['aot_wv','Rrs2_mean_wv','wind_speed','chla'],\
+              'SEABASS':['Rrs2_mean_wv'],\
+             }
+
+    #pair_dic={'ATL_ALD_2A':['alh']}
     
     #pair_dic={'ALM15':['sph', 'sph_coarse'],\
     #          'HYB15':['sph', 'sph_coarse']}
@@ -210,60 +215,7 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
 
             ###########################################################################
 
-            def get_global_map(file1, file2, suite1, var1, wvv4b):
-                """
-                if wv in var1, plot four bands
-                """
-                
-                df1 = pd.read_csv(file1)
-                df2 = pd.read_csv(file2)
-                case = {}
-                case['file1'] = file1
-                case['file2'] = file2
-                
-                case['var_range']=[]
-                case['diff_range'] =[]
-                case['pct_range']=[-100, 100]
-                case['lon_col']='aeronet_lon'
-                case['lat_col']='aeronet_lat'
-                case['var'] = var2
-                case['suite1'] = suite1            
-
-            var_list = []
-            if "wv" not in var1:
-                var_list = var_list.append(var1)
-            else:
-                for wv1 in wvv4b:
-                    var_list.append(var1+str(wv1))
-            
-           for var2 in var_list:
-                data1 = df1[var2]
-                data2 = df2[var2]
-
-                get min and max data within 80%
-                print(case)
-                print('=====plot global map:', case['suite1'], case['var'])
-                outfile = os.path.join(
-                    summary_folder_plot,
-                    f"{product1}_{case['suite1']}_{case['var']}_validation_diff.png"
-                )
-                print("*****save location:", outfile)
-                title = f"Global Map: {case['suite1']} {case['var']} (PACE with validation)"
-                
-                #try:
-                plot_four_csv_maps(
-                    case['file1'],
-                    case['file2'],
-                    case['var'],
-                    case['lon_col'],
-                    case['lat_col'],
-                    suptitle=title,
-                    outfile=outfile,
-                    var_range=case['var_range'],
-                    diff_range=case['diff_range'],
-                    pct_range=case['pct_range']
-                )
-                plt.show()
+            #get_global_map(file1, file2, suite1, var1, wvv4b)
             
             #test except
             #except:
@@ -308,6 +260,8 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
     shutil.copy(source_html, share_folder_html)
     print(f"Copied to:", share_folder_html)
 
+
+                      
 def get_filtered_csv_file(matchup_daily_folder, filet, tspan):
     """get all csv and the napply tspan filtering"""
     filev = glob.glob(os.path.join(matchup_daily_folder, '*/csv', filet))

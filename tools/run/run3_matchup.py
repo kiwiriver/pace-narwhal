@@ -137,8 +137,8 @@ def main():
     appkey=<appkey>
     api_key=<api_key>
 
-    
-    save_path1 = os.path.join(input_folder,product1, f"pace_{val_source.lower()}_{all_rules_str}", "daily")
+    #consistent with narwhal_combine
+    save_path1 = os.path.join(input_folder,product1, f"pace_{val_source.lower()}", f"criteria_{all_rules_str}", "daily")
     print("   ***path to save daily data:", save_path1)
 
     #######################################################################################################

@@ -22,8 +22,8 @@ mamba activate py3.12
 #fi
 #echo "Using file: $pyfile"
 
-pyfile="/mnt/mfs/mgao1/analysis/github/mapoltool/tools/aeronet2_batch/run_combine.py"
-pyfile="/mnt/mfs/mgao1/analysis/github/pace-narwhal/tools/run/run_combine.py"
+#pyfile="/mnt/mfs/mgao1/analysis/github/mapoltool/tools/aeronet2_batch/run_combine.py"
+pyfile="/mnt/mfs/mgao1/analysis/github/pace-narwhal/tools/run/run4_combine.py"
 
 ###########################
 product="harp2_fastmapol"
@@ -31,10 +31,10 @@ product="spexone_fastmapol"
 #product='spexone_remotap'  # Change this to switch between products
 
 #val_source='AERONET'
-#val_source='AERONET_OC'
+val_source='AERONET_OC'
 #val_source='MAN'
 #xval_source='PACE_PAX'
-val_source='EARTHCARE' 
+#val_source='EARTHCARE' 
 
 if [ "$product" = "harp2_fastmapol" ]; then
     echo "Using HARP2 FastMAPOL configuration"
@@ -42,6 +42,7 @@ if [ "$product" = "harp2_fastmapol" ]; then
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90],"quality_flag":[0,5]}'
     subset_rules='{"chi2_max":2, "nv_min":30, "min_aod":0.2, "max_aod":1}'
     subset_rules='{"chi2_max":2, "nv_min":30, "min_aod":0.1, "max_aod":1}'
+    subset_rules='{"chi2_max":2, "nv_min":30, "min_aod":0.01, "max_aod":1}'
     #subset_rules='{"chi2_max":2, "nv_min":60, "min_aod":0.2, "max_aod":1}'
 
     

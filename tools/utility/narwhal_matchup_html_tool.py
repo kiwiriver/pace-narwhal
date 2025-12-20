@@ -47,7 +47,7 @@ def encode_image_to_base64(image_path, factor=1, output_format="JPEG", quality=8
 def parse_filename(filename):
     """
     Parse filename to extract suite name, variable name, and wavelength info.
-    Handles specific suite names: AOD15, SDA15, ALM15, HYB15, LWN15, MAN_AOD15_series, MAN_SDA15_series
+    Handles specific suite names: AOD15, SDA15, ALM15, HYB15, LWN15, SEABASS,MAN_AOD15_series, MAN_SDA15_series
     Returns: (suite_name, variable_name, wavelength, plot_type)
     """
     # Remove file extension
@@ -65,8 +65,8 @@ def parse_filename(filename):
             suite_name = 'MAN_UNKNOWN'
             remaining = base_name[4:]  # Remove 'MAN_'
     else:
-        # Handle standard suite names: AOD15, SDA15, ALM15, HYB15, LWN15
-        suite_match = re.match(r'^((?:AOD|SDA|ALM|HYB|LWN)15|HSRL2_R[01A]|ATL_ALD_2A)_', base_name)
+        # Handle standard suite names: AOD15, SDA15, ALM15, HYB15, LWN15, SEABASS
+        suite_match = re.match(r'^((?:AOD|SDA|ALM|HYB|LWN)15|HSRL2_R[01A]|ATL_ALD_2A|SEABASS)_', base_name)
         #suite_match = re.match(r'^((?:AOD|SDA|ALM|HYB|LWN)15)_', base_name)
         if suite_match:
             suite_name = suite_match.group(1)

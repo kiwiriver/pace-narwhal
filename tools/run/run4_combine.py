@@ -91,12 +91,19 @@ def main():
     print("    ====path to share html:", share_folder_html)
 
     #make sure the folder exist
-    path_dict=[matchup_daily_folder, \
-               summary_folder_csv, summary_folder_plot, summary_folder_html ,\
+    #should already exist
+    
+    path_dict=[matchup_daily_folder, summary_folder_csv, summary_folder_plot, summary_folder_html ,\
                share_folder_csv, share_folder_html]
 
-    
-    for path1 in path_dict:
+    for path1 in path_dict[:1]:
+        if os.path.exists(path1):
+            print(f"✅ Directory exists: {path1}")
+        else:
+            print(f"❌ Directory NOT found: {path1}")
+            sys.exit(1)
+        
+    for path1 in path_dict[1:]:
         os.makedirs(path1, exist_ok=True)
 
     #########################################################################################
