@@ -1,9 +1,8 @@
 import re
+import os
 import math
 import time
 import traceback
-
-
 
 from tqdm import tqdm
 import xarray as xr
@@ -54,29 +53,42 @@ def check_netcdf_file(nc_path):
     """
     Check if NetCDF file is accessible and not corrupted
     """
-    print("*********************************************************************")
+    print("     ***check file validity")
     try:
         # Check if file exists and has reasonable size
         if not os.path.exists(nc_path):
-            return False, "File does not exist"
+            print("     File does not exist")
+            return False
         
         file_size = os.path.getsize(nc_path)
         if file_size == 0:
-            return False, "File is empty"
+            print("     File is empty")
+            return False
         
         if file_size < 1000:  # Very small file, likely corrupted
-            return False, f"File too small ({file_size} bytes)"
+            print(f"     File too small ({file_size} bytes)")
+            return False
         
-        # Try to open just the file info without loading data
-        with xr.open_dataset(nc_path, decode_times=False) as ds:
-            # Check if we can access basic attributes
-            _ = ds.attrs
-            _ = list(ds.variables.keys())
-        
-        return True, "****File OK*****"
+        # Try both methods that your module uses
+        try:
+            # First try the same method as your module
+            datatree = xr.open_datatree(nc_path, decode_timedelta=False)
+            datatree.close()
+            print("     ****File OK***** (datatree method)")
+            return True
+        except:
+            # Fallback to dataset method
+            with xr.open_dataset(nc_path, decode_times=False) as ds:
+                _ = ds.attrs
+                _ = list(ds.variables.keys())
+            print("     ****File OK***** (dataset method)")
+            return True
     
     except Exception as e:
-        return False, str(e)
+        print("     ****File NOT OK*****", str(e))
+        print("     Full traceback:")
+        traceback.print_exc()
+        return False 
         
 def aeronet_search(aeronet_df1, filev, search_center_radius = 10, \
                    aeronet_lon_var='Longitude(decimal_degrees)', aeronet_lat_var='Latitude(decimal_degrees)', \
@@ -99,16 +111,25 @@ def aeronet_search(aeronet_df1, filev, search_center_radius = 10, \
     boundingboxv={}
     
     for nc_path in tqdm(filev[:]):
-        print(nc_path)
-        check_netcdf_file(nc_path)
+        
+        #print("***nc path:", nc_path)
+        #check_netcdf_file(nc_path)
+
         try:
             datetime1 = re.search(r'(\d{8}T\d{6})', nc_path).group(1)
-            dataset = xr.open_datatree(nc_path, group='geolocation_data')
+            #dataset = xr.open_datatree(nc_path, group='geolocation_data')
+            #dataset = xr.open_dataset(nc_path, group='geolocation_data')
+
+            #use datatree instead of dataset to avoid mixing configuration of xarray
+            datatree = xr.open_datatree(nc_path, decode_timedelta=False)
+            dataset = xr.merge(datatree.to_dict().values())
         
             lon_variable = dataset['longitude'].values
             lat_variable = dataset['latitude'].values
             lons, lats = get_boundingbox(lon_variable, lat_variable)
             boundingboxv[datetime1]=[lons, lats]
+
+            #print("load lat and lon from nc file")
             
             indexv = get_match(datetime1, lon_variable, lat_variable, lon_loc, lat_loc, namev, search_center_radius = search_center_radius)
             indexvv[datetime1]=indexv

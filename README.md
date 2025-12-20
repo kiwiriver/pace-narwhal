@@ -80,3 +80,8 @@ systemctl status cron #check cron job status
 
 ### Example Cron Configuration
 
+### Issues:
+when mixing xarray.open_datatree and xarray.open_dataset, poseidon has issues to open the file properly:
+        datatree = xr.open_datatree(nc_path, decode_timedelta=decode_timedelta)
+        dataset = xr.merge(datatree.to_dict().values())
+        

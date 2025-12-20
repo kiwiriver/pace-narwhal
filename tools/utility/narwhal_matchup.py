@@ -27,6 +27,11 @@ from tqdm import tqdm
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+#2025/12/20
+#somehow loading this function can help configure xarray with the datatree method
+#if removed, there is issue to open xarray
+from tools.aeronet_matchup_search import check_netcdf_file
+
 from tools.aeronet_matchup_extract import subset_time_pace_aeronet, subset_loc_pace_data, \
                                             prepare_date, prepare_vars
 from tools.narwhal_matchup_plot import plot_corr_one_density_kde, plot_four_csv_maps
@@ -260,18 +265,17 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
         print(f"Processing: {suite1}, {old_start1}, {old_end1}, {new_start1}, {wvv_input}")
 
         #for each variable separately
-        #try:
-        get_matchup_results(out_dir1, out_dir2, tspan, \
-                            date_list, val_path1, site1v, product1, suite1, \
-                            pace_df_mean_all, pace_df_std_all,\
-                            old_start1, old_end1, new_start1, wvv_input, delta_hour, \
-                            input_is_sda=input_is_sda, wv550=wv550, \
-                            val_source=val_source, df0=df0)
-
-        #turn off except
-        #except:
-        #    print("no valid results from get_matchup_results ")
-
+        try:
+            get_matchup_results(out_dir1, out_dir2, tspan, \
+                                date_list, val_path1, site1v, product1, suite1, \
+                                pace_df_mean_all, pace_df_std_all,\
+                                old_start1, old_end1, new_start1, wvv_input, delta_hour, \
+                                input_is_sda=input_is_sda, wv550=wv550, \
+                                val_source=val_source, df0=df0)
+        except Exception as e:
+            print(f"  Error in finding matchups: {str(e)}")
+            print("  Full traceback:")
+            traceback.print_exc()
         
     #################################################################################
     ## make more plot for example cases

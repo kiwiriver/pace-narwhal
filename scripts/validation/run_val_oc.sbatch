@@ -15,41 +15,31 @@
 # Your env activation
 mamba activate py3.12
 
-file1="/home/mgao/github/mapoltool/tools/aeronet2_batch/run_matchup.py"
-file2="/accounts/mgao1/github/mapoltool/tools/aeronet2_batch/run_matchup.py"
-if [ -f "$file1" ]; then
-    pyfile="$file1"
-elif [ -f "$file2" ]; then
-    pyfile="$file2"
-else
-    echo "Neither file exists. Exiting."
-    exit 1
-fi
-echo "Using file: $pyfile"
-
+pyfile="/mnt/mfs/mgao1/analysis/github/pace-narwhal/tools/run/run3_matchup.py"
 
 ###########################
 #aeronet/man/ data location                                                     
 val_source='AERONET_OC'
 val_path='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
-loc_suite='LWN15'
+loc_suite='LWN15' #default contain more sites
+#loc_suite='SEABASS' #contain less sites
 val_url='none'
 
-f0_file='f0_tsis_aeronet_oc_bw10.csv'
+#f0_file='f0_tsis_aeronet_oc_bw10.csv'
 
-#product="harp2_fastmapol"
-product="spexone_fastmapol"
+product="harp2_fastmapol"
+#product="spexone_fastmapol"
 #product='spexone_remotap'  # Change this to switch between products
 
 if [ "$product" = "harp2_fastmapol" ]; then
     echo "Using HARP2 FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,0]}'
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
+    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
     
 elif [ "$product" = "spexone_fastmapol" ]; then
     echo "Using SPEXone FastMAPOL configuration"
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
-    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
+    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
 
     
 elif [ "$product" = "spexone_remotap" ]; then
@@ -77,16 +67,16 @@ yesterday=$(date -d "yesterday" +"%Y-%m-%d")
 num_days=$(( ($(date -d "$yesterday" +%s) - $(date -d "$start_date" +%s)) / 86400 + 1 ))
 
 #batch_size=70
-#batch_size=7
+batch_size=7
 #batch_size=600
 #batch_size=100
 #batch_size=200
-batch_size=1
+#batch_size=1
 
 array_id=$SLURM_ARRAY_TASK_ID
 
 #array_id=95 #2024/06/04
-array_id=189 #2024/09/06
+#array_id=189 #2024/09/06
 
 first_day=$(( array_id * batch_size ))
 last_day=$(( first_day + batch_size - 1 ))
@@ -119,12 +109,13 @@ for day_offset in $(seq $first_day $last_day); do
     python_file="${folder_name}/python_tmp/${product}_newpyjob_${tspan_start}.py"
     sed "s/<appkey>/\"$appkey\"/g" $pyfile | sed "s/<api_key>/\"$api_key\"/g" > "$python_file"
     ls "$python_file"
-    
+
+    #--f0_file ${f0_file}
     # Run the Python file
-    python "$python_file" --f0_file ${f0_file} --val_source ${val_source} --val_path ${val_path} \
+    python "$python_file" --val_source ${val_source} --val_path ${val_path} \
 	   --loc_suite ${loc_suite} --val_url ${val_url} \
 	   --input_folder ${folder_name} --tspan_start $tspan_start --tspan_end $tspan_end \
-	   --product $product --all_rules "${all_rules}" --no_cloud --no_rm
+	   --product $product --all_rules "${all_rules}" --no_cloud 
     #--save_subset_loc_path './' --no_rm
     #--no_cloud
 

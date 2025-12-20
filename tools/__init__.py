@@ -18,3 +18,14 @@ for name in os.listdir(_pkg_dir):
     if os.path.isdir(sub) and not name.startswith("_"):
         # append it to the package search path
         __path__.append(sub)
+
+
+#check version:
+import sys
+import xarray as xr
+import numpy as np
+
+print(f"Python version: {sys.version}")
+print(f"Python version (short): {sys.version_info}")
+print(f"xarray version: {xr.__version__}")
+print(f"numpy version: {np.__version__}")

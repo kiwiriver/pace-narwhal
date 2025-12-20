@@ -4,8 +4,6 @@
 #for testing do not include any other files
 test/*
 # But don't ignore these specific files
-!/test/run_rapid
-!/test/run_spot
 !/test/*.sh
 #other genereal folder and file to ignore
 __pycache__

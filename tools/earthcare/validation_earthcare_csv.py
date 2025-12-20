@@ -76,7 +76,7 @@ def split_earthcare_csv(earthcare_save_folder, output_file_path, tspan=None, \
     #    fig, ax = plot_multiple_files_cartopy(filevt)
     #    plt.show()
     
-def process_earthcare_data(file_path):
+def process_earthcare_data(nc_path):
     """
     Process EarthCARE data and create DataFrame:
     - Read specific variables from an xarray dataset
@@ -87,7 +87,7 @@ def process_earthcare_data(file_path):
     
     Parameters:
     -----------
-    file_path : str
+    nc_path : str
         Path to the input file
     
     Returns:
@@ -96,7 +96,9 @@ def process_earthcare_data(file_path):
         The processed dataframe (None if no valid data)
     """
     # Read the dataset
-    df3 = xr.open_dataset(file_path, group='ScienceData')
+    #df3 = xr.open_dataset(nc_path, group='ScienceData')
+    datatree = xr.open_datatree(nc_path, decode_timedelta=False)
+    df3 = xr.merge(datatree.to_dict().values())
     
     # Check for expected variables
     basic_vars = ['time', 'latitude', 'longitude', 'aerosol_layer_number']
