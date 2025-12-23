@@ -88,8 +88,8 @@ def parse_and_organize_files(ordered_files):
     """Parse all filenames and organize by suite and variable."""
     # Define expected suite names for validation
     expected_suites = {
-        'AOD15', 'SDA15', 'ALM15', 'HYB15', 'LWN15', 'SEABASS'
-        'MAN_AOD15_series', 'MAN_SDA15_series',
+        'AOD15', 'SDA15', 'ALM15', 'HYB15', 'LWN15', 'SEABASS_ALL', 'SEABASS_OCI',\
+        'MAN_AOD15_series', 'MAN_SDA15_series',\
         'HSRL2_R1', 'HSRL2_R0', 'HSRL2_RA', 'ATL_ALD_2A'
     }
     
@@ -259,7 +259,8 @@ def get_suite_description(suite_name):
         'ALM15': 'Almucantar Mode',
         'HYB15': 'Hybrid Mode',
         'LWN15': 'Ocean Color',
-        'SEABASS': 'SEABASS Ocean Color',
+        'SEABASS_ALL': 'SEABASS Ocean Color',
+        'SEABASS_OCI': 'SEABASS matchups on OCI bands',
         'MAN_AOD15_series': 'MAN AOD',
         'MAN_SDA15_series': 'MAN SDA',
         'HSRL2_R1': 'HSRL2 (R1)',
@@ -532,7 +533,7 @@ def process_suites_and_generate_html(parsed_files, suites, folder_path, resoluti
     variable_display_names = get_variable_display_names()
     
     # Define suite order for display
-    suite_order = ['AOD15', 'SDA15', 'ALM15', 'HYB15', 'LWN15', 'SEABASS', \
+    suite_order = ['AOD15', 'SDA15', 'ALM15', 'HYB15', 'LWN15', 'SEABASS_ALL','SEABASS_OCI',\
                    'MAN_AOD15_series', 'MAN_SDA15_series',
                   'HSRL2_R1', 'HSRL2_R0', 'HSRL2_RA','ATL_ALD_2A']
     

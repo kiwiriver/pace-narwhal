@@ -92,7 +92,8 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
               'MAN_AOD15_series':['aot_wv','angstrom_440_870'],\
               'MAN_SDA15_series':['aot_fine_wv','aot_coarse_wv'],\
               'LWN15':['aot_wv','Rrs2_mean_wv','wind_speed','chla'],\
-              'SEABASS':['Rrs2_mean_wv'],\
+              'SEABASS_ALL':['Rrs2_mean_wv'],\
+              'SEABASS_OCI':['Rrs2_mean_wv'],\
               'HSRL2_R1':['aot550', 'wind_speed', 'alh'],\
               'ATL_ALD_2A':['alh'],\
              }
@@ -102,9 +103,15 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
     #pair_dic={'HSRL2_R1':['aot550', 'wind_speed', 'alh']}
 
     pair_dic={'LWN15':['aot_wv','Rrs2_mean_wv','wind_speed','chla'],\
-              'SEABASS':['Rrs2_mean_wv'],\
+              'SEABASS_ALL':['Rrs2_mean_wv'],\
+              'SEABASS_OCI':['Rrs2_mean_wv'],\
              }
-
+    
+    #pair_dic={
+    #          'SEABASS_ALL':['Rrs2_mean_wv'],\
+    #          'SEABASS_OCI':['Rrs2_mean_wv'],\
+    #         }
+    
     #pair_dic={'ATL_ALD_2A':['alh']}
     
     #pair_dic={'ALM15':['sph', 'sph_coarse'],\
@@ -200,8 +207,8 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
             print("-----finish csv creation ---------------------------------------------------------")
 
             
-            file1=csv_file_share['target_mean']
-            file2=csv_file_share['pace_mean']
+            file1=csv_file_share['target_mean'] #validation target source
+            file2=csv_file_share['pace_mean']   #pace product
             df1 = pd.read_csv(file1)
             df2 = pd.read_csv(file2)
 
@@ -374,9 +381,15 @@ def plot_combine_hist(df2, \
 def plot_combine_corr(df1, df2, wvv_corr_plot, \
                          summary_folder_plot,val_source, product1, suite1, var1):
     """
+
+    df1: target at val_source (aeronet, aeronet oc etc
+    df2: pace product: product1
+    
     file1='AOD15_aot_wv_all_pace_mean_df.csv'
     use the wavelength as input in wvv_corr_plot, and determine the var for plot, e.g.
         screened_vars = ['aot_wv440', 'aot_wv550', 'aot_wv670', 'aot_wv870']
+
+        
     """
 
     if(len(wvv_corr_plot)>0):
@@ -389,8 +402,8 @@ def plot_combine_corr(df1, df2, wvv_corr_plot, \
         fileout1v=[os.path.join(summary_folder_plot, f"{suite1}_{var1}_corr.png")]
         
     print(screened_vars)
-    xlabel=val_source.upper()
-    ylabel=product1.upper()
+    xlabel=val_source.upper()  # x: target
+    ylabel=product1.upper() #y: pace
                                                                   
     plot_corr(df1, df2, screened_vars, xlabel=xlabel, ylabel=ylabel, title1v=title1v, fileout1v=fileout1v)
     

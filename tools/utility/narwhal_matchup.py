@@ -56,7 +56,7 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
                             all_rules, \
                             save_subset_loc_path, share_dir_base,\
                             val_source='AERONET', flag_rm=True, flag_earthdata_cloud=False, \
-                            df0=None, logo_path=None):
+                            df0=None, logo_path=None, max_order=-1):
     """
     define the main function to run matchup
 
@@ -88,6 +88,7 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
         val_source
         flag_rm
         flag_earthdata_cloud
+        max_order: used for interpolation (>=0 linear, <0 spline), data outside range, set to nan
 
 
     Path example:
@@ -146,6 +147,7 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
         
     #######################################################################################################
     if(l2_data_folder == None):
+        # plot_path not used
         l2_path1, l1c_path, plot_path, html_path = download_pace_data(tspan, product1, appkey, api_key, \
                                                                       path1=save_path1, \
                                                                       flag_earthdata_cloud=flag_earthdata_cloud)
@@ -161,6 +163,7 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
             print(f"Warning: No .nc files found in {l2_data_folder}")
         
         # Process local files and copy those in time range
+        # plot_path not used
         l2_path1, l1c_path, plot_path, html_path = process_local_nc_files(tspan, l2_data_folder, product1, \
                                                                            path1=save_path1)
         
@@ -183,8 +186,9 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
     out_dir1 = os.path.join(matchup_save_folder2, 'csv')
     out_dir2 = os.path.join(matchup_save_folder2, 'plot')
     
-    print("output dir", out_dir1)
-    print("output dir", out_dir2)
+    print("   ***output dir csv:", out_dir1)
+    print("   ***output dir plot", out_dir2)
+    
     os.makedirs(out_dir1, exist_ok=True)
     os.makedirs(out_dir2, exist_ok=True)
 
@@ -271,7 +275,7 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
                                 pace_df_mean_all, pace_df_std_all,\
                                 old_start1, old_end1, new_start1, wvv_input, delta_hour, \
                                 input_is_sda=input_is_sda, wv550=wv550, \
-                                val_source=val_source, df0=df0)
+                                val_source=val_source, df0=df0, max_order=max_order)
         except Exception as e:
             print(f"  Error in finding matchups: {str(e)}")
             print("  Full traceback:")
@@ -394,7 +398,8 @@ def narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_f
 
 def process_all_folders(folder1v, site1v, pace_df_mean_all, pace_df_std_all, wvv_input, all_vars, 
                        extra_vars=None, delta_hour=None, old_start1=None, old_end1=None, 
-                       new_start1=None, input_is_sda=False, val_source='AERONET', df0=None):
+                       new_start1=None, input_is_sda=False, val_source='AERONET', \
+                        df0=None, max_order=1, tmp_plot_path0=None):
     """
     Process all folders and combine the resulting DataFrames.
     
@@ -453,9 +458,10 @@ def process_all_folders(folder1v, site1v, pace_df_mean_all, pace_df_std_all, wvv
             aeronet_df_mean_all, aeronet_df_std_all, pace_df_mean_all, pace_df_std_all = \
                 subset_time_pace_aeronet(folder1, site1v, \
                                          pace_df_mean_all, pace_df_std_all, wvv_input, all_vars, \
-                                   extra_vars=extra_vars, delta_hour=delta_hour,\
-                                  old_start1=old_start1, old_end1=old_end1, new_start1=new_start1,\
-                                  input_is_sda=input_is_sda, val_source=val_source, df0=df0)
+                                         extra_vars=extra_vars, delta_hour=delta_hour,\
+                                         old_start1=old_start1, old_end1=old_end1, new_start1=new_start1,\
+                                         input_is_sda=input_is_sda, val_source=val_source, \
+                                         df0=df0, max_order=max_order, tmp_plot_path0=tmp_plot_path0)
             
             # Append each DataFrame to the respective list (only if not empty/None)
             if aeronet_df_mean_all is not None and not aeronet_df_mean_all.empty:
@@ -508,7 +514,7 @@ def get_matchup_results(out_dir1, out_dir2, tspan, date_list, \
                         aeronet_path1, site1v, product1, suite1, \
                         pace_df_mean_all, pace_df_std_all,\
                         old_start1, old_end1, new_start1, wvv_input, delta_hour,\
-                        input_is_sda=False, wv550=550, val_source='AERONET', df0=None):
+                        input_is_sda=False, wv550=550, val_source='AERONET', df0=None, max_order=1):
     """
     get the final matchpu results, and make plots
     wvv_input=None for variable do not have a wv dimension
@@ -530,12 +536,18 @@ def get_matchup_results(out_dir1, out_dir2, tspan, date_list, \
     print("extra_vars", extra_vars)
 
     folder1v=prepare_date(aeronet_path1, suite1, date_list)
-        
+
+    #for tempolary save of plot files
+    tmp_plot_path0 = os.path.join(out_dir2, suite1+'_'+new_start1)
+    
     aeronet_df_mean_all, aeronet_df_std_all, pace_df_mean_all, pace_df_std_all = \
         process_all_folders(folder1v, site1v, pace_df_mean_all, pace_df_std_all, wvv_input, all_vars, 
                                extra_vars=extra_vars, delta_hour=delta_hour,\
                               old_start1=old_start1, old_end1=old_end1, new_start1=new_start1,\
-                              input_is_sda=input_is_sda, val_source=val_source, df0=df0)
+                              input_is_sda=input_is_sda, val_source=val_source, df0=df0, max_order=max_order,\
+                              tmp_plot_path0=tmp_plot_path0)
+    
+    
     #save data
     #AOD15_aot_wv_all_target_mean_df.csv
     dfs_to_save = [
@@ -546,7 +558,9 @@ def get_matchup_results(out_dir1, out_dir2, tspan, date_list, \
         ]
         
     for df, filename in dfs_to_save:
-        df.to_csv(os.path.join(out_dir1, filename), index=False,float_format='%.6f')
+        save_path1 = os.path.join(out_dir1, filename)
+        print("save csv:", save_path1)
+        df.to_csv(save_path1, index=False,float_format='%.6f')
             
 
     #make density plots

@@ -17,6 +17,9 @@ import cartopy
 import cartopy.crs as ccrs
 
 def plot_search(indexvv, boundingboxv, outfile=None):
+    """
+    plot the global map with candicate matchup pixels
+    """
     fig = plt.figure(figsize=(12, 6))
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_global()
@@ -48,6 +51,7 @@ def plot_search(indexvv, boundingboxv, outfile=None):
     plt.title('Validation Matchup Locations')
     if(outfile):
         plt.savefig(outfile, dpi=300)
+    plt.close()
 
 def check_netcdf_file(nc_path):
     """

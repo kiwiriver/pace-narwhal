@@ -6,7 +6,8 @@ import pandas as pd
 from scipy.interpolate import UnivariateSpline
 from tools.aeronet_matchup_sda import get_sda_aod
 from tools.aeronet_oc import get_aeronet_oc_rrs
-from tools.aeronet_matchup_match import get_aeronet_fit_spline            
+from tools.aeronet_matchup_match import get_aeronet_fit_spline, get_aeronet_fit_polynomial, \
+                                check_aeronet_fit, get_aeronet_key            
 from tools.aeronet_matchup_man import get_man_site
 
 def clean_pace_data(df_mean_all, df_std_all):
@@ -197,7 +198,8 @@ def get_val_df(val_source, folder1, site1):
 
 def format_aeronet_df(aeronet_df1, input_wavelengths = [440, 550, 670, 870], \
                      old_start1='AOD_', old_end1='nm', new_start1='aot_wv',\
-                     input_is_sda=False, site_name='AERONET_Site', df0=None):
+                     input_is_sda=False, site_name='AERONET_Site', \
+                      df0=None, max_order=1, tmp_plot_path0=None):
     """
     format aeronet df, interpolate wavelength, ***select the relevant variables
     aeronet_df1: aeronet
@@ -273,7 +275,7 @@ def format_aeronet_df(aeronet_df1, input_wavelengths = [440, 550, 670, 870], \
 
         #print("after sda interpolation", aeronet_df2)
         
-        orig_wvv = input_wavelengths
+        orig_wavelengths = input_wavelengths
         
     else: 
         #map to the pace wavelength
@@ -281,20 +283,31 @@ def format_aeronet_df(aeronet_df1, input_wavelengths = [440, 550, 670, 870], \
 
             #interpolate data into new set of wavelength: input_wavelengths
             #original wavelength will be save
-            aeronet_df2, orig_wvv= get_aeronet_fit_spline(aeronet_df1, aeronet_df2, \
-                                                          input_wavelengths, \
-                                  old_start1=old_start1, old_end1=old_end1, new_start1=new_start1)
-            
+            if(max_order>=0):
+                print("polynomial interpolation:", max_order)
+                aeronet_df2, orig_wavelengths = get_aeronet_fit_polynomial(aeronet_df1, aeronet_df2, input_wavelengths,\
+                                      max_order=max_order, old_start1=old_start1, old_end1=old_end1, new_start1=new_start1)
+            else:
+                print("spline interpolation:", max_order)
+                aeronet_df2, orig_wavelengths = get_aeronet_fit_spline(aeronet_df1, aeronet_df2, input_wavelengths,\
+                                      old_start1=old_start1, old_end1=old_end1, new_start1=new_start1)
+
+            outfile=tmp_plot_path0+'_interpolation_check.png'
+            print("interpolation check plot in:", outfile)
+            check_aeronet_fit(aeronet_df1, orig_wavelengths, aeronet_df2, input_wavelengths,max_order, \
+                              old_start1, old_end1, new_start1, nline=3, outfile=outfile)
         else:
+            #no wavelength is involved
             target_cols = [c for c in aeronet_df1.columns \
                            if c.startswith(old_start1) and c.endswith(old_end1)]
+
             #print("aeronet_df1.columns", list(aeronet_df1.columns))
             print("new_start1", new_start1)
             print("target_cols", target_cols)
             aeronet_df2[new_start1]=aeronet_df1[target_cols]
-            orig_wvv=None
+            orig_wavelengths=None
     
-    return aeronet_df2, orig_wvv
+    return aeronet_df2, orig_wavelengths
 
 def create_datetime_column(df):
     """

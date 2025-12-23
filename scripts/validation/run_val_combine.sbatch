@@ -49,7 +49,7 @@ if [ "$product" = "harp2_fastmapol" ]; then
 elif [ "$product" = "spexone_fastmapol" ]; then
     echo "Using SPEXone FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
 
     subset_rules='{"chi2_max":2, "nv_min":120, "min_aod":0.2, "max_aod":1}'
     subset_rules='{"chi2_max":2, "nv_min":120, "min_aod":0.1, "max_aod":1}'

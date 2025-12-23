@@ -27,19 +27,19 @@ val_url='none'
 
 #f0_file='f0_tsis_aeronet_oc_bw10.csv'
 
-product="harp2_fastmapol"
-#product="spexone_fastmapol"
+#product="harp2_fastmapol"
+product="spexone_fastmapol"
 #product='spexone_remotap'  # Change this to switch between products
 
 if [ "$product" = "harp2_fastmapol" ]; then
     echo "Using HARP2 FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[30,90], "nv_dolp":[30,90] ,"quality_flag":[0,5]}'
     
 elif [ "$product" = "spexone_fastmapol" ]; then
     echo "Using SPEXone FastMAPOL configuration"
     all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,0]}'
-    #all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
+    all_rules='{"search_center_radius": 5, "search_grid_delta":10, "delta_hour":2, "chi2":[0,2], "nv_ref":[120,170], "nv_dolp":[120,170],"quality_flag":[0,5]}'
 
     
 elif [ "$product" = "spexone_remotap" ]; then
@@ -71,12 +71,12 @@ batch_size=7
 #batch_size=600
 #batch_size=100
 #batch_size=200
-#batch_size=1
+batch_size=1
 
 array_id=$SLURM_ARRAY_TASK_ID
 
 #array_id=95 #2024/06/04
-#array_id=189 #2024/09/06
+array_id=189 #2024/09/06
 
 first_day=$(( array_id * batch_size ))
 last_day=$(( first_day + batch_size - 1 ))

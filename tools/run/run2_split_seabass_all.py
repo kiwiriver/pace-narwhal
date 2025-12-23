@@ -16,7 +16,7 @@ filev=glob.glob(path1+'*.env')
 path0='/mnt/mfs/mgao1/develop/aeronet/aeronet_val01/data/aeronet_data_split/'
 overwrite=True
 
-output_dir = f"{path0}/SEABASS/"
+output_dir = f"{path0}/SEABASS_ALL/"
 os.makedirs(output_dir, exist_ok=True)
 
 for file1 in filev:
@@ -34,11 +34,11 @@ for file1 in filev:
     lon_name = 'Site_Longitude(Degrees)'
     columns_to_move = [site_name, datetime_name, date_name,time_name, lat_name, lon_name]
     
-    pd1[datetime_name]=data1.fd_datetime()
+    pd1[datetime_name] = data1.fd_datetime()
     pd1[site_name] = get_site_name(file1)
-    pd1[lat_name]=pd1['lat']
-    pd1[lon_name]=pd1['lon']
-    pd1 = create_time_and_date_columns(pd1, date_name=date_name, time_name=time_name)
+    pd1[lat_name] = pd1['lat']
+    pd1[lon_name] = pd1['lon']
+    pd1 = create_time_and_date_columns(pd1, datetime_col=datetime_name, date_name=date_name, time_name=time_name)
     #pd1 = add_wv_to_wavelength_columns(pd1)
     pd1 = move_columns_to_front(pd1,columns_to_move=columns_to_move)
 

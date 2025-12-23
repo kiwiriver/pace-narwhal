@@ -32,7 +32,7 @@ def subset_time_pace_aeronet(folder1, site1v, pace_df_mean_all, pace_df_std_all,
                                    'distance1_haversine','distance2_euclidean'],\
                         delta_hour=1, flag_subset_pace=True, \
                         old_start1='AOD_', old_end1='nm', new_start1='aot_wv',\
-                       input_is_sda=False, val_source='AERONET', df0=None):
+                       input_is_sda=False, val_source='AERONET', df0=None, max_order=1,tmp_plot_path0=None):
     """
     now search the aeronet data to match with pace, within delta_hour, for each variable
     when input_is_sda=True, use internal interpolation based on angstrom to get aod, aod_fine, aod_coarse
@@ -63,7 +63,7 @@ def subset_time_pace_aeronet(folder1, site1v, pace_df_mean_all, pace_df_std_all,
                                    old_start1=old_start1, old_end1=old_end1, new_start1=new_start1,\
                                                              input_is_sda=input_is_sda, \
                                                               site_name=site_name, \
-                                                              df0=df0)
+                                                              df0=df0, max_order=max_order,tmp_plot_path0=tmp_plot_path0)
             #print(aeronet_df2)
             
             print("**wavelength in aeronet or man:", orig_wavelengths)

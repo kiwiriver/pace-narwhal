@@ -138,7 +138,7 @@ def main():
     api_key=<api_key>
 
     #consistent with narwhal_combine
-    save_path1 = os.path.join(input_folder,product1, f"pace_{val_source.lower()}", f"criteria_{all_rules_str}", "daily")
+    save_path1 = os.path.join(input_folder,product1, f"{val_source.lower()}", f"criteria_{all_rules_str}", "daily")
     print("   ***path to save daily data:", save_path1)
 
     #######################################################################################################
@@ -163,6 +163,8 @@ def main():
     t1=time.time()
     logo_path = os.path.join(mapol_path, "logo", 'narwhal_logo_v1.png')
     print("logo location:", logo_path)
+    max_order=-1
+    print("interpolation order:", max_order)
     narwhal_matchup_daily(matchup_save_folder, matchup_save_folder2, html_save_folder,\
                             val_url, val_path1, loc_suite1, tspan, \
                             product1, appkey, api_key, \
@@ -170,7 +172,8 @@ def main():
                             all_rules, \
                             save_subset_loc_path, share_dir_base,\
                             val_source=val_source, flag_rm=flag_rm, \
-                            flag_earthdata_cloud=flag_earthdata_cloud, df0=df0, logo_path=logo_path)
+                            flag_earthdata_cloud=flag_earthdata_cloud, df0=df0, \
+                            logo_path=logo_path, max_order=max_order)
     
     t2=time.time()
     print("===total time for processing===", t2-t1)

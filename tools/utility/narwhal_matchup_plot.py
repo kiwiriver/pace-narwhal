@@ -114,6 +114,7 @@ def plot_csv_on_map(
     plt.savefig(outfile, dpi=300)
     print(f"Saved map as: {outfile}")
     plt.show()
+    plt.close()
 
 def plot_four_csv_maps(
     file1, file2,
@@ -232,6 +233,7 @@ def plot_four_csv_maps(
     plt.savefig(outfile, dpi=300)
     print(f"Saved 2x2 map grid as: {outfile}")
     plt.show()
+    plt.close()
 
 ############################################  
 
@@ -388,6 +390,7 @@ def plot_corr_one_density_kde(
     if fileout:
         plt.savefig(fileout, dpi=300)
     plt.show()
+    plt.close()
         
 
 
@@ -401,6 +404,7 @@ def plot_corr_diff_loc_index(all_target_mean_df, all_pace_mean_df, select_vars, 
     plt.ylabel("PACE")
     plt.legend(loc=(1.01,0))
     plt.savefig(outfile, dpi=300)
+    plt.close()
     
 def plot_corr(all_target_mean_df, all_pace_mean_df, select_vars, range1=(0,1), title=None, fileout=None):
     min1, max1 = range1
@@ -414,3 +418,4 @@ def plot_corr(all_target_mean_df, all_pace_mean_df, select_vars, range1=(0,1), t
     plt.ylabel("PACE")
     plt.legend(loc=(1.01,0))
     plt.savefig(outfile, dpi=300)
+    plt.close()
