@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -5,122 +6,109 @@ import cartopy.feature
 import numpy as np
 from scipy.stats import linregress, gaussian_kde
 
-def plot_csv_on_map(
-    file1, file2,
-    var,
-    lon_col,
-    lat_col,
-    mode="diff",  # Options: "file1", "file2", "diff", "pct"
-    title=None,
-    outfile='map.png'
-):
+def get_percentile_range(data, lower_pct=10, upper_pct=90):
+    """Get range excluding outliers"""
+    data_clean = data.dropna()
+    if len(data_clean) == 0:
+        return [0, 1]
+    return [np.percentile(data_clean, lower_pct), 
+            np.percentile(data_clean, upper_pct)]
+        
+def get_global_map(file1, file2, suite1, var1, wvv4b,\
+                   summary_folder_plot, product1, 
+                   target_prefix='target_var_', pace_prefix='pace_var_'):
     """
-    Plots specified mode for `var`:
-        mode='file1' : just file1 var
-        mode='file2' : just file2 var
-        mode='diff'  : file2 - file1
-        mode='pct'   : (file2 - file1) / file1 * 100
-
-    Lon/lat are always from file2 for plotting.
-
-    Parameters:
-        - file1, file2: Paths to CSV files.
-        - var: Name of variable/column to plot/compare.
-        - lon_col, lat_col: Names of longitude and latitude columns (from file2).
-        - mode: "file1", "file2", "diff", or "pct"
-        - title: Plot title (optional).
-        - outfile: Output image file name.
+    if wv in var1, plot four bands
     """
-    # Load CSV data
-    df1 = pd.read_csv(file1)
-    df2 = pd.read_csv(file2)
-
-    # Basic validation
-    if mode in ['diff', 'pct']:
-        if var not in df1.columns or var not in df2.columns:
-            print(f"Variable '{var}' not found in both CSV files.")
-            return
-    elif mode == 'file1':
-        if var not in df1.columns:
-            print(f"Variable '{var}' not found in file1.")
-            return
-    elif mode == 'file2':
-        if var not in df2.columns:
-            print(f"Variable '{var}' not found in file2.")
-            return
-    if lon_col not in df2.columns or lat_col not in df2.columns:
-        print(f"Longitude or latitude columns '{lon_col}', '{lat_col}' not found in second CSV file.")
+    
+    try:
+        df1 = pd.read_csv(file1, index_col=0)
+        df2 = pd.read_csv(file2, index_col=0)
+    except Exception as e:
+        print(f"Error loading files: {e}")
         return
-
-    # Align by row (change to merge as needed)
-    minlen = min(len(df1), len(df2))
-    lon = df2[lon_col].iloc[:minlen].values
-    lat = df2[lat_col].iloc[:minlen].values
-
-    label = None
-    if mode == "file1":
-        dat = df1[var].iloc[:minlen].values.astype(float)
-        label = f"{var} [file1]"
-        if title is None:
-            title = f"{var} (file1)"
-    elif mode == "file2":
-        dat = df2[var].iloc[:minlen].values.astype(float)
-        label = f"{var} [file2]"
-        if title is None:
-            title = f"{var} (file2)"
-    elif mode == "diff":
-        v1 = df1[var].iloc[:minlen].values.astype(float)
-        v2 = df2[var].iloc[:minlen].values.astype(float)
-        dat = v2 - v1
-        label = f"Difference ({var})"
-        if title is None:
-            title = f"{var} Difference (file2 - file1)"
-    elif mode == "pct":
-        v1 = df1[var].iloc[:minlen].values.astype(float)
-        v2 = df2[var].iloc[:minlen].values.astype(float)
-        percent_diff = np.full_like(v1, np.nan)
-        mask = v1 != 0
-        percent_diff[mask] = (v2[mask] - v1[mask]) / v1[mask] * 100
-        dat = percent_diff
-        label = f"Percent Difference ({var}) [%]"
-        if title is None:
-            title = f"{var} Percent Difference (file2 - file1)"
-
-    # Set color limits
-    vmax = np.nanmax(np.abs(dat))
-    if mode in ['file1', 'file2']:
-        vmin = np.nanmin(dat)
-        vmax = np.nanmax(dat)
+        
+    case = {
+        'file1': file1,
+        'file2': file2,
+        'pct_range': [-100, 100],
+        'lon_col': 'pace_lon',
+        'lat_col': 'pace_lat',
+        'suite1': suite1
+    }
+    
+    # Build variable list
+    var_list = []
+    if "wv" not in var1:
+        var_list.append(var1)
     else:
-        vmin = -vmax
+        var_list.extend([var1 + str(wv1) for wv1 in wvv4b])
+    
 
-    # Plot
-    fig = plt.figure(figsize=(12, 6))
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.set_global()
-    ax.add_feature(cartopy.feature.OCEAN, edgecolor='w', linewidth=0.01)
-    ax.add_feature(cartopy.feature.LAND, edgecolor='w', linewidth=0.01)
-    ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
+    
+    for var0 in var_list:
+        
+        # Build column names
+        col1 = target_prefix + var0
+        col2 = pace_prefix + var0
 
-    sc = plt.scatter(
-        lon, lat, c=dat, cmap='sesmic', s=50,
-        transform=ccrs.PlateCarree(),
-        vmin=vmin, vmax=vmax
-    )
-    plt.colorbar(sc, orientation='vertical', label=label)
-    plt.title(title)
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    plt.savefig(outfile, dpi=300)
-    print(f"Saved map as: {outfile}")
-    plt.show()
-    plt.close()
+        case['var0'] = var0
+        case['var1'] = col1
+        case['var2'] = col2
+        
+        # Check if columns exist
+        if col1 not in df1.columns:
+            print(f"Warning: Column {col1} not found in {file1}")
+            continue
+        if col2 not in df2.columns:
+            print(f"Warning: Column {col2} not found in {file2}")
+            continue
 
-def plot_four_csv_maps(
-    file1, file2,
-    var,
-    lon_col,
-    lat_col,
+        #.values.astype(float)
+        data1 = df1[col1]
+        data2 = df2[col2]
+        
+        # Calculate ranges
+        range1 = get_percentile_range(data1)
+        range2 = get_percentile_range(data2)
+        
+        case['var_range'] = [min(range1[0], range2[0]), 
+                            max(range1[1], range2[1])]
+        
+        diff_data = data2 - data1
+        case['diff_range'] = get_percentile_range(diff_data)
+        
+        print(case)
+        print('=====plot global map:', case['suite1'], case['var1'], case['var2'])
+        
+        # Create output filename
+        os.makedirs(summary_folder_plot, exist_ok=True)
+        outfile = os.path.join(
+            summary_folder_plot,
+            f"{product1}_{case['suite1']}_{case['var0']}_validation_diff.png"
+        )
+        print("     *****save global diff map location:", outfile)
+        title = f"Global Map: {case['suite1']} {case['var0']} (PACE with validation)"
+        
+        #try:
+        #.values.astype(float)
+        lon2 = df2[case['lon_col']]
+        lat2 = df2[case['lat_col']]
+        plot_four_csv_maps(case['var0'],
+            data1, data2, 
+            lon2, lat2,
+            suptitle=title,
+            outfile=outfile,
+            var_range=case['var_range'],
+            diff_range=case['diff_range'],
+            pct_range=case['pct_range']
+        )
+        plt.show()
+        #except Exception as e:
+        #   print(f"Error plotting {var2}: {str(e)}")
+        #   continue
+
+def plot_four_csv_maps(var, v1, v2, lon, lat, \
     suptitle=None,
     outfile='four_maps.png',
     file1_label='Validation Target',
@@ -138,14 +126,6 @@ def plot_four_csv_maps(
     cm2='RdBu',
     """
 
-    # Read data from CSV
-    df1 = pd.read_csv(file1)
-    df2 = pd.read_csv(file2)
-    minlen = min(len(df1), len(df2))
-    lon = df2[lon_col].iloc[:minlen].values
-    lat = df2[lat_col].iloc[:minlen].values
-    v1 = df1[var].iloc[:minlen].values.astype(float)
-    v2 = df2[var].iloc[:minlen].values.astype(float)
     diff = v2 - v1
     pct = np.full_like(diff, np.nan)
     mask_valid_pct = (v1 != 0)

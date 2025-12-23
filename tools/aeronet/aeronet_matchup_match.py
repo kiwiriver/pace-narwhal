@@ -130,7 +130,7 @@ def check_aeronet_fit(aeronet_df1, orig_wavelengths, \
     # Ensure we don't plot more lines than available data
     nline = min(nline, len(data1), len(data2))
 
-    plt.figure(figsize=(4,4))
+    plt.figure(figsize=(8,6))
     
     # Get default color cycle
     colors = plt.cm.tab10(np.linspace(0, 1, nline))
@@ -139,9 +139,9 @@ def check_aeronet_fit(aeronet_df1, orig_wavelengths, \
     for i in range(nline):
         color = colors[i]
         plt.plot(wvv1, data1[i], '.-', color=color, 
-                label=f'original_{i}' if nline > 1 else 'original', alpha=0.5)
+                label=f'original_{i}' if nline > 1 else 'original', alpha=0.8)
         plt.plot(wvv2, data2[i], 'o', color=color, markerfacecolor='none', 
-                markersize=6, label=f'fitted_{i}' if nline > 1 else 'fitted', alpha=0.5)
+                markersize=6, label=f'fitted_{i}' if nline > 1 else 'fitted', alpha=0.8)
     
     plt.legend(loc=(1.05,0))
     plt.xlabel("wavelength")

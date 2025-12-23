@@ -85,6 +85,7 @@ def main():
     summary_folder_html = os.path.join(local_dir_base, common_path1)
     # HTML output path
     share_folder_csv = os.path.join(share_dir_base,common_path1, 'csv')
+    share_folder_plot = os.path.join(share_dir_base,common_path1, 'plot')
     share_folder_html = os.path.join(share_dir_base, common_path1)
 
     print("    ====path to locate csv:", matchup_daily_folder)
@@ -94,7 +95,7 @@ def main():
     #should already exist
     
     path_dict=[matchup_daily_folder, summary_folder_csv, summary_folder_plot, summary_folder_html ,\
-               share_folder_csv, share_folder_html]
+               share_folder_csv, share_folder_plot, share_folder_html]
 
     for path1 in path_dict[:1]:
         if os.path.exists(path1):

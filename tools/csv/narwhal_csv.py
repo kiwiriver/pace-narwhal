@@ -4,10 +4,19 @@ reformat csv into a more standard format
 
 import pandas as pd
 
-def reformat_csv(file1, file2):
+def reformat_csv(file1, file2, aot550_key):
+    """
+    create new csv file which overlap the original one
+    include index for the convenient to match with other files
+
+    set a col as target_aot550_key or pace_aot550_key without var in its name
+    aot550_key may only in pace files (as it is one of the retrieval product)
     
+    """
     df1=pd.read_csv(file1)
     df2=pd.read_csv(file2)
+    #df1_aot550 = df1[aot550_key] #may not contain
+    df2_aot550 = df2[aot550_key] #always contain
     
     #reformat df
     #target
@@ -17,10 +26,16 @@ def reformat_csv(file1, file2):
     
     df3 = pd.merge(df1, df2)
     df1 = redefine_df(df3, str1='target_')
+    #key1 = 'target_' + aot550_key
+    #df1[key2] = df1_aot550
+    
     df2 = redefine_df(df3, str1='pace_')
+    key2 = 'pace_' + aot550_key
+    df2[key2] = df2_aot550
+    
     #reset file1 and file2
-    df1.to_csv(file1)
-    df2.to_csv(file2)
+    df1.to_csv(file1, index=True)
+    df2.to_csv(file2, index=True)
     
 def format_df_target(df1):
 
@@ -60,14 +75,16 @@ def format_df_pace(df2):
     
     # Step 2: Define column groups
     front_columns = ['pace_datetime', 'pace_timestamp', 'pace_lon', 'pace_lat', 'target_site', 'target_lon', 'target_lat']
-    
-    end_columns = ['pace_count','pace_aot_wv548', 'pace_chi2',  'pace_nv_ref', 
+
+    #ignore 'pace_aot_wv548', 
+    end_columns = ['pace_count','pace_chi2',  'pace_nv_ref', 
                    'pace_nv_dolp', 'pace_quality_flag', 'pace_loc_index_lon', 'pace_loc_index_lat',
                    'pace_distance1_haversine', 'pace_distance2_euclidean']
     
     # Step 3: Add 'pace_' prefix to end columns that don't already have it
+    #ignore 'aot_wv548', 
     rename_dict = {}
-    for col in ['aot_wv548', 'chi2', 'count', 'nv_ref', 'nv_dolp', 'quality_flag', 
+    for col in ['chi2', 'count', 'nv_ref', 'nv_dolp', 'quality_flag', 
                 'distance1_haversine', 'distance2_euclidean']:
         if col in df2.columns:
             rename_dict[col] = f'pace_{col}'

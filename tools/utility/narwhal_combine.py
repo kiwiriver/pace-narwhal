@@ -12,9 +12,10 @@ import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-from tools.narwhal_matchup_plot import plot_four_csv_maps, plot_corr_one_density_kde
+from tools.narwhal_matchup_plot import plot_four_csv_maps, plot_corr_one_density_kde, get_global_map
 from tools.narwhal_matchup_html_suite import create_html_with_embedded_images_and_buttons, format_html_info_matchup
 from tools.narwhal_matchup_order import get_image_files,ordered_image_list
+from tools.narwhal_csv import reformat_csv
 
 def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_aod1, max_aod1, \
                             all_rules=None, val_source='AERONET', logo_path=None):
@@ -57,9 +58,8 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
 
     #### load the folders to read and save data ####
 
-    matchup_daily_folder, \
-    summary_folder_csv, summary_folder_plot, summary_folder_html,\
-    share_folder_csv, share_folder_html = path_dict
+    matchup_daily_folder, summary_folder_csv, summary_folder_plot, summary_folder_html,\
+                                share_folder_csv, share_folder_plot, share_folder_html = path_dict
 
     #### load csv info file ######
     current_path = os.getcwd()
@@ -204,32 +204,53 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
                 csv_file_share[key1] = os.path.join(share_folder_csv, file_save_full)
                 
                 
-            print("-----finish csv creation ---------------------------------------------------------")
+            print("-----format csv file ---------------------------------------------------------")
 
-            
+            ##reformat the data structure
             file1=csv_file_share['target_mean'] #validation target source
             file2=csv_file_share['pace_mean']   #pace product
-            df1 = pd.read_csv(file1)
-            df2 = pd.read_csv(file2)
+            reformat_csv(file1, file2, aot550_key)
+            
+            file1=csv_file_share['target_std'] #validation target source
+            file2=csv_file_share['pace_std']   #pace product
+            reformat_csv(file1, file2, aot550_key)
 
-            #plot histogram
-            plot_combine_hist(df2, \
-                    summary_folder_plot,val_source, product1, suite1, var1)
+            print("-----print data ---------------------------------------------------------")
+            file1=csv_file_share['target_mean'] #validation target source
+            file2=csv_file_share['pace_mean']   #pace product
+            df1 = pd.read_csv(file1, index_col=0)
+            df2 = pd.read_csv(file2, index_col=0)
 
+            print(file1)
+            print(file2)
+
+            print("-----corr and hist plot ---------------------------------------------------------")
             #combine correlation at selected wavelength
             plot_combine_corr(df1, df2, wvv_corr_plot,\
-                    summary_folder_plot,val_source, product1, suite1, var1)
-
-            ###########################################################################
-
-            #get_global_map(file1, file2, suite1, var1, wvv4b)
+                    summary_folder_plot,val_source, product1, suite1, var1,\
+                              target_prefix='target_var_', pace_prefix='pace_var_')
             
+            #plot histogram
+            plot_combine_hist(df2, \
+                    summary_folder_plot,val_source, product1, suite1, var1, \
+                              pace_prefix='pace_')
+
+            print("-----global diff plot ---------------------------------------------------------")
+            #plot global map for all variable
+            get_global_map(file1, file2, suite1, var1, wvv4b,\
+                   summary_folder_plot, product1, 
+                   target_prefix='target_var_', pace_prefix='pace_var_')
+
             #test except
             #except:
             #    print("*****************************************")
             #    print("********can not found", f"{suite1}_{var1}")
     
     ####################################
+    #copy the plot to share folder too
+    #use copytree to copy folder
+    shutil.copytree(summary_folder_plot, share_folder_plot)
+    
     #create html
 
     
@@ -266,9 +287,7 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
     #### copy to share folder
     shutil.copy(source_html, share_folder_html)
     print(f"Copied to:", share_folder_html)
-
-
-                      
+ 
 def get_filtered_csv_file(matchup_daily_folder, filet, tspan):
     """get all csv and the napply tspan filtering"""
     filev = glob.glob(os.path.join(matchup_daily_folder, '*/csv', filet))
@@ -330,8 +349,8 @@ def set_var_criteria(suite1, var1, csv_lookup, wvv1, chi2_max1, nv_min1, min_aod
 
 def get_mask(df2, chi2_max, nv_min, min_aod, max_aod, aot550_key='aot_wv550'):
     """
-    df1: validation data
-    df2: retrieval data
+    df1: validation data/target data
+    df2: retrieval data/pace data
     
     apply data mask on nv_min and aot550
     """
@@ -363,7 +382,8 @@ def get_all_csv(csv_files):
     return df1
 
 def plot_combine_hist(df2, \
-                         summary_folder_plot,val_source, product1, suite1, var1):
+                     summary_folder_plot,val_source, product1, suite1, var1,\
+                     pace_prefix='pace_var_'):
     """
     get histogram of the retrieval results 
     """
@@ -371,15 +391,20 @@ def plot_combine_hist(df2, \
 
     plt.figure(figsize=(6,4))
     try:
-        df2[['chi2', 'nv_ref', 'nv_dolp', 'quality_flag']].hist(bins=50)
+        key1v=['chi2', 'nv_ref', 'nv_dolp', 'quality_flag']
+        key1v = [pace_prefix+key1 for key1 in key1v]
+        df2[key1v].hist(bins=50)
     except:
-        df2[['chi2', 'quality_flag']].hist(bins=50)
+        key1v=['chi2', 'quality_flag']
+        key1v = [pace_prefix+key1 for key1 in key1v]
+        df2[key1v].hist(bins=50)
         
     plt.savefig(fileout0, dpi=300, bbox_inches='tight')
 
 
-def plot_combine_corr(df1, df2, wvv_corr_plot, \
-                         summary_folder_plot,val_source, product1, suite1, var1):
+def plot_combine_corr(df1, df2,  wvv_corr_plot, \
+                         summary_folder_plot,val_source, product1, suite1, var1,\
+                         target_prefix='target_var_', pace_prefix='pace_var_'):
     """
 
     df1: target at val_source (aeronet, aeronet oc etc
@@ -393,21 +418,27 @@ def plot_combine_corr(df1, df2, wvv_corr_plot, \
     """
 
     if(len(wvv_corr_plot)>0):
-        screened_vars = [str(var1)+str(wv) for wv in wvv_corr_plot]
+        target_screened_vars = [target_prefix+str(var1)+str(wv) for wv in wvv_corr_plot]
+        pace_screened_vars = [pace_prefix+str(var1)+str(wv) for wv in wvv_corr_plot]
+        
         title1v=[f"{suite1}_{var1}{wv}" for wv in wvv_corr_plot]
         fileout1v=[os.path.join(summary_folder_plot, f"{suite1}_{var1}{wv}_corr.png") for wv in wvv_corr_plot]
     else:
-        screened_vars = [var1]
+        target_screened_vars = [target_prefix+var1]
+        pace_screened_vars = [pace_prefix+var1]
+        
         title1v=[f"{suite1}_{var1}"]
         fileout1v=[os.path.join(summary_folder_plot, f"{suite1}_{var1}_corr.png")]
         
-    print(screened_vars)
+    print(pace_screened_vars)
+    print(target_screened_vars)
     xlabel=val_source.upper()  # x: target
     ylabel=product1.upper() #y: pace
                                                                   
-    plot_corr(df1, df2, screened_vars, xlabel=xlabel, ylabel=ylabel, title1v=title1v, fileout1v=fileout1v)
+    plot_corr(df1, df2, target_screened_vars, pace_screened_vars, \
+              xlabel=xlabel, ylabel=ylabel, title1v=title1v, fileout1v=fileout1v)
     
-def plot_corr(all_target_mean_df, all_pace_mean_df, screened_vars, \
+def plot_corr(all_target_mean_df, all_pace_mean_df, target_screened_vars, pace_screened_vars, \
               xlabel="Target", ylabel="PACE", title1v = None, fileout1v=None):
     
     """
@@ -418,12 +449,12 @@ def plot_corr(all_target_mean_df, all_pace_mean_df, screened_vars, \
 
     #print("         >plot correlation on screened_vars:", screened_vars)
     
-    for var1, title1, fileout1 in zip(screened_vars, title1v, fileout1v):
+    for var1, var2, title1, fileout1 in zip(target_screened_vars, pace_screened_vars, title1v, fileout1v):
         #print("           *plot corr:", var1, title1, fileout1)
-        print("           *plot corr:", var1)
+        print("           *plot corr:", var1, var2)
         
         x = all_target_mean_df[var1].values
-        y = all_pace_mean_df[var1].values
+        y = all_pace_mean_df[var2].values
         
         #print("number of pixels for x and y:", x.shape, y.shape)
 
