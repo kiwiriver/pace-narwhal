@@ -43,9 +43,7 @@ def get_global_map(file1, file2, suite1, var1, wvv4b,\
         var_list.append(var1)
     else:
         var_list.extend([var1 + str(wv1) for wv1 in wvv4b])
-    
-
-    
+        
     for var0 in var_list:
         
         # Build column names

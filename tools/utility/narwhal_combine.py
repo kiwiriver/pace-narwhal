@@ -249,7 +249,7 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
     ####################################
     #copy the plot to share folder too
     #use copytree to copy folder
-    shutil.copytree(summary_folder_plot, share_folder_plot)
+    shutil.copytree(summary_folder_plot, share_folder_plot, dirs_exist_ok=True)
     
     #create html
 
