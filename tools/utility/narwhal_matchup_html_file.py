@@ -130,7 +130,8 @@ def generate_csv_urls(folder_path, suite, variable):
     # Base filename pattern - more flexible to handle cases with or without 'wv'
     #base_filename_pattern = f"{suite}_{variable}/{suite}_{variable}*_all"
     #aot_wv or aot can be confusing use * instead
-    base_filename_pattern = f"{suite}_{variable}*/{suite}_{variable}*_all"
+    #base_filename_pattern = f"{suite}_{variable}*/{suite}_{variable}*_all"
+    base_filename_pattern = f"{suite}_{variable}*_all"
     
     urls = {}
     # File types to look for
@@ -159,57 +160,100 @@ def generate_csv_urls(folder_path, suite, variable):
         else:
             print("file not available")
             urls[suffix] = None
+            
     return urls
 
 def generate_plot_content(var_id, data, files, plot_type, folder_path, resolution_factor, quality, display_style=''):
     """Generate HTML for plot content (correlation, histogram, or global map)."""
     html_parts = [f'<div class="plot-content {plot_type}-content" id="{var_id}_{plot_type}" style="{display_style}">']
     
-    # For map plots, don't use wavelength tabs - show all images directly
-    if plot_type == 'map' or not data['has_wavelengths']:
-        # No wavelength dependency - show all files directly
-        for file_info in files:
+    # Define which plot types should show all wavelengths together
+    show_all_wavelengths = ['corr', 'map', 'hist']  # Add/remove plot types as needed
+    
+    if plot_type in show_all_wavelengths or not data['has_wavelengths']:
+        # Show all files directly without wavelength tabs
+        if data['has_wavelengths']:
+            # Sort files by wavelength in increasing order
+            def sort_by_wavelength(file_info):
+                wv = file_info['wavelength']
+                if not wv:
+                    return -1  # No wavelength comes first
+                elif '_' in str(wv):  # For patterns like 440_670
+                    return int(str(wv).split('_')[0])
+                else:
+                    try:
+                        return int(wv)  # Convert to int for numerical sorting
+                    except (ValueError, TypeError):
+                        return 0  # Fallback for non-numeric wavelengths
+            
+            # Sort in increasing wavelength order
+            sorted_files = sorted(files, key=sort_by_wavelength)
+        else:
+            sorted_files = files
+            
+        # Display files in sorted order
+        for file_info in sorted_files:
             fname = file_info['filename']
             fpath = os.path.join(folder_path, fname)
             b64 = encode_image_to_base64(fpath, factor=resolution_factor, quality=quality)
             if b64:
-                html_parts.append(f'<h4>{fname}</h4>')
+                # Extract wavelength for display in title, making it more prominent
+                if file_info['wavelength']:
+                    wv_display = f" - Wavelength: {file_info['wavelength']}nm"
+                    # Add a wavelength section header before each image
+                    html_parts.append(f'<h3 style="margin-top: 25px; color: #2196F3; border-bottom: 1px solid #eee; padding-bottom: 10px;">Wavelength: {file_info["wavelength"]}nm</h3>')
+                else:
+                    wv_display = ""
+                
+                html_parts.append(f'<h4>{fname}{wv_display}</h4>')
                 html_parts.append(f'<img src="data:image/png;base64,{b64}" alt="{fname}">')
     else:
-        # Use wavelength tabs for corr and hist plots
+        # Use wavelength tabs for histograms and other plot types
         wv_files = defaultdict(list)
         for file_info in files:
             wv = file_info['wavelength'] or 'no_wv'
             wv_files[wv].append(file_info)
         
-        # Custom sorting for wavelengths
+        # Custom sorting for wavelengths - ensure numerical ordering
         def sort_wavelength(wv):
             if wv == 'no_wv':
-                return (0, 0)
+                return -999  # No wavelength comes first
             elif '_' in str(wv):  # For angstrom patterns like 440_670
-                return (1, int(wv.split('_')[0]))
+                try:
+                    return int(str(wv).split('_')[0])  # Sort by first number
+                except (ValueError, TypeError):
+                    return -1
             else:
-                return (1, int(wv))
+                try:
+                    return int(wv)  # Numerical sorting
+                except (ValueError, TypeError):
+                    return 0
         
-        # Generate wavelength tabs
+        # Generate wavelength tabs in sorted order
         html_parts.append('<div class="wavelength-tabs">')
-        for wv in sorted(wv_files.keys(), key=sort_wavelength):
+        sorted_wavelengths = sorted(wv_files.keys(), key=sort_wavelength)
+        
+        for i, wv in enumerate(sorted_wavelengths):
             if wv == 'no_wv':
                 wv_display = 'All Wavelengths'
             elif '_' in str(wv):
-                wv_display = f"λ{wv}nm"
+                wv_display = f"{wv}nm"
             else:
-                wv_display = f"λ{wv}nm"
+                wv_display = f"{wv}nm"
             
-            html_parts.append(f'<span class="wavelength-tab" onclick="showWavelength(\'{var_id}\', \'{wv}\', \'{plot_type}\')">{wv_display}</span>')
+            # Add 'active' class to first tab
+            active_class = ' active' if i == 0 else ''
+            html_parts.append(f'<span class="wavelength-tab{active_class}" onclick="showWavelength(\'{var_id}\', \'{wv}\', \'{plot_type}\')">{wv_display}</span>')
         html_parts.append('</div>')
         
         # Generate content for each wavelength
-        for wv in sorted(wv_files.keys(), key=sort_wavelength):
+        for i, wv in enumerate(sorted_wavelengths):
             wv_container_id = f"{var_id}_wv_{wv}_{plot_type}_content"
-            html_parts.append(f'<div id="{wv_container_id}" style="display: none;">')
+            # Show first wavelength by default, hide others
+            display_style_wv = 'display: block;' if i == 0 else 'display: none;'
+            html_parts.append(f'<div id="{wv_container_id}" style="{display_style_wv}">')
             
-            # Add images
+            # Add images for this wavelength
             for file_info in wv_files[wv]:
                 fname = file_info['filename']
                 fpath = os.path.join(folder_path, fname)
@@ -219,7 +263,7 @@ def generate_plot_content(var_id, data, files, plot_type, folder_path, resolutio
                     html_parts.append(f'<img src="data:image/png;base64,{b64}" alt="{fname}">')
             
             html_parts.append('</div>')
-    
+        
     html_parts.append('</div>')  # End plot-content
     return '\n'.join(html_parts)
     
@@ -234,11 +278,12 @@ def generate_html_for_variable(suite, variable, data, folder_path, variable_disp
     
     # Generate CSV URLs for this variable
     csv_urls = generate_csv_urls(folder_path, suite, variable)
+    print(csv_urls)
     
     # Separate different plot types
     corr_files = [f for f in data['files'] if f['plot_type'] == 'corr']
     hist_files = [f for f in data['files'] if f['plot_type'] == 'hist']
-    map_files = [f for f in data['files'] if f['plot_type'] == 'map']  # Global map files
+    map_files = [f for f in data['files'] if f['plot_type'] == 'map']
     
     # Add criteria buttons - include Global Map if available
     buttons_to_show = []
@@ -247,7 +292,7 @@ def generate_html_for_variable(suite, variable, data, folder_path, variable_disp
     if hist_files:
         buttons_to_show.append(('hist', '📈 Distribution'))
     if map_files:
-        buttons_to_show.append(('map', '🗺️ Global Map'))  # Add global map button
+        buttons_to_show.append(('map', '🗺️ Global Map'))
     buttons_to_show.append(('download', '💾 Download Data'))
     
     if buttons_to_show:
@@ -257,13 +302,46 @@ def generate_html_for_variable(suite, variable, data, folder_path, variable_disp
             html_parts.append(f'<button class="criteria-btn {btn_type}{active_class}" onclick="{"showCriteria" if btn_type != "download" else "toggleDownloadLinks"}(\'{var_id}\', \'{btn_type}\')">{btn_label}</button>')
         html_parts.append('</div>')
     
-    # Add download links section
+    # Add download links section with view and download options
     html_parts.append(f'<div class="download-links" id="{var_id}_downloads">')
-    html_parts.append('<strong>📥 Download CSV Data Files:</strong><br>')
-    html_parts.append(f'<a href="{csv_urls["target_mean"]}" class="download-link" target="_blank">AERONET Mean</a>')
-    html_parts.append(f'<a href="{csv_urls["target_std"]}" class="download-link" target="_blank">AERONET Std</a>')
-    html_parts.append(f'<a href="{csv_urls["pace_mean"]}" class="download-link" target="_blank">PACE Mean</a>')
-    html_parts.append(f'<a href="{csv_urls["pace_std"]}" class="download-link" target="_blank">PACE Std</a>')
+    html_parts.append('<strong>📥 CSV Data Files:</strong><br>')
+    
+    csv_files = [
+        ('target_mean', 'Target Mean'),
+        ('target_std', 'Target Std'),
+        ('pace_mean', 'PACE Mean'),
+        ('pace_std', 'PACE Std')
+    ]
+    
+    for suffix, display_name in csv_files:
+        if suffix in csv_urls:
+            url = csv_urls[suffix]
+            
+            print("set up download link")
+            print(url)
+            
+            filename = os.path.basename(url)
+            print(filename)
+            
+            html_parts.append(f'''
+            <div class="csv-file-item">
+                <strong>{display_name}:</strong><br>
+                <button onclick="viewCSV('{url}', '{filename}')" 
+                        class="view-csv-btn">
+                    👁️ View CSV
+                </button>
+                <a href="{url}" class="download-link" target="_blank" download="{filename}">💾 Download</a>
+            </div>
+            ''')
+        else:
+            # Show placeholder if URL not found
+            html_parts.append(f'''
+            <div class="csv-file-item" style="opacity: 0.6;">
+                <strong>{display_name}:</strong><br>
+                <span style="color: #666; font-size: 12px;">File not found</span>
+            </div>
+            ''')
+    
     html_parts.append('</div>')
     
     # Generate content for correlation plots if they exist

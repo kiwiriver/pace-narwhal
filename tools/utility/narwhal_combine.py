@@ -107,10 +107,9 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
               'SEABASS_OCI':['Rrs2_mean_wv'],\
              }
     
-    #pair_dic={
-    #          'SEABASS_ALL':['Rrs2_mean_wv'],\
-    #          'SEABASS_OCI':['Rrs2_mean_wv'],\
-    #         }
+    pair_dic={
+              'SEABASS_OCI':['Rrs2_mean_wv'],\
+             }
     
     #pair_dic={'ATL_ALD_2A':['alh']}
     
@@ -185,10 +184,12 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
             
                 # save csv to internal path
                 # add another subfolder for both summary and share path
-                summary_folder_csv_var = os.path.join(summary_folder_csv, f"{suite1}_{var1}")
-                os.makedirs(summary_folder_csv_var, exist_ok=True)
-                share_folder_csv_var = os.path.join(share_folder_csv, f"{suite1}_{var1}")
-                os.makedirs(share_folder_csv_var, exist_ok=True)
+                summary_folder_csv_var = summary_folder_csv
+                #summary_folder_csv_var = os.path.join(summary_folder_csv, f"{suite1}_{var1}")
+                #os.makedirs(summary_folder_csv_var, exist_ok=True)
+                share_folder_csv_var = share_folder_csv
+                #share_folder_csv_var = os.path.join(share_folder_csv, f"{suite1}_{var1}")
+                #os.makedirs(share_folder_csv_var, exist_ok=True)
                 
                 #print("    ====path to save csv avg in local:", summary_folder_csv_var)
                 
@@ -261,7 +262,8 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
 
     
     print("==arrange image order for html==")
-    folder_path = summary_folder_plot
+    #folder_path = summary_folder_plot
+    folder_path = share_folder_plot #for share folder
     image_files = get_image_files(folder_path)
     #ordered_files = final_ordered_image_list(image_files)
     prior = ["validation_matchup", "validation_diff"]

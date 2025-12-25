@@ -44,65 +44,64 @@ def encode_image_to_base64(image_path, factor=1, output_format="JPEG", quality=8
         f.write("</head>\n<body>\n")
         f.write(f"<h1>{title}</h1>\n<p>{title2 or ''}</p>\n")
 
+
 def parse_filename(filename):
     """
     Parse filename to extract suite name, variable name, and wavelength info.
-    Handles specific suite names: AOD15, SDA15, ALM15, HYB15, LWN15, SEABASS_ALL, SEABASS_OCI, 
-                                  MAN_AOD15_series, MAN_SDA15_series
-    Returns: (suite_name, variable_name, wavelength, plot_type)
     """
     # Remove file extension
     base_name = filename.replace('.png', '')
     
-    # Handle MAN suite names specially (MAN_AOD15_series, MAN_SDA15_series)
+    # Handle MAN suite names specially
     if base_name.startswith('MAN_'):
-        # Look for exact patterns: MAN_AOD15_series, MAN_SDA15_series
         man_match = re.match(r'^(MAN_(?:AOD|SDA)15_series)_', base_name)
         if man_match:
             suite_name = man_match.group(1)
             remaining = base_name[len(suite_name)+1:]
         else:
-            # If no match, treat as unknown MAN suite
             suite_name = 'MAN_UNKNOWN'
-            remaining = base_name[4:]  # Remove 'MAN_'
+            remaining = base_name[4:]
     else:
-        # Handle standard suite names: AOD15, SDA15, ALM15, HYB15, LWN15, SEABASS
+        # Handle standard suite names
         suite_match = re.match(r'^((?:AOD|SDA|ALM|HYB|LWN)15|HSRL2_R[01A]|ATL_ALD_2A|SEABASS_ALL|SEABASS_OCI)_', base_name)
-        #suite_match = re.match(r'^((?:AOD|SDA|ALM|HYB|LWN)15)_', base_name)
         if suite_match:
             suite_name = suite_match.group(1)
             remaining = base_name[len(suite_name)+1:]
         else:
-            # If no standard suite match found
             suite_name = 'UNKNOWN'
             remaining = base_name
     
-    # Extract plot type (corr or hist)
-    #plot_type = 'corr' if remaining.endswith('_corr') else ('hist' if remaining.endswith('_hist') else 'other')
-    plot_type = 'corr' if remaining.endswith('_corr') else (
-    'hist' if remaining.endswith('_hist') else (
-        'map' if remaining.endswith('_map') else 'other'
-    )
-)
+    # Define plot type mappings - easy to extend
+    plot_type_mappings = {
+        'corr': 'corr',
+        'hist': 'hist', 
+        'map': 'map',
+        #'validation_diff': 'map'
+    }
     
-    # Remove plot type from remaining
-    if plot_type != 'other':
-        remaining = remaining[:-5]  # Remove '_corr' or '_hist'
+    # Extract plot type - check all known types
+    plot_type = 'other'
+    for suffix, ptype in plot_type_mappings.items():
+        pattern = f'_{suffix}$'
+        if re.search(pattern, remaining):
+            plot_type = ptype
+            # Remove the matched suffix
+            remaining = re.sub(pattern, '', remaining)
+            break
     
     # Extract wavelength information
     wavelength = None
     wv_match = re.search(r'_wv(\d+)', remaining)
     if wv_match:
         wavelength = wv_match.group(1)
-        # Remove wavelength from variable name
         remaining = re.sub(r'_wv\d+', '', remaining)
-    elif re.search(r'_(\d+)_(\d+)', remaining):  # For angstrom_440_670 pattern
+    elif re.search(r'_(\d+)_(\d+)', remaining):  # For angstrom patterns
         wv_match = re.search(r'_(\d+)_(\d+)', remaining)
         wavelength = f"{wv_match.group(1)}_{wv_match.group(2)}"
         remaining = re.sub(r'_\d+_\d+', '', remaining)
-    elif remaining.endswith('_wv'):  # For cases like "aot_wv" - treat as no specific wavelength
-        remaining = remaining[:-3]  # Remove '_wv'
-        wavelength = None  # No overview, just no specific wavelength
+    elif remaining.endswith('_wv'):
+        remaining = remaining[:-3]
+        wavelength = None
     
     variable_name = remaining
     
