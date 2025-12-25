@@ -102,14 +102,16 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
     
     #pair_dic={'HSRL2_R1':['aot550', 'wind_speed', 'alh']}
 
-    pair_dic={'LWN15':['aot_wv','Rrs2_mean_wv','wind_speed','chla'],\
-              'SEABASS_ALL':['Rrs2_mean_wv'],\
-              'SEABASS_OCI':['Rrs2_mean_wv'],\
-             }
+    #pair_dic={'LWN15':['aot_wv','Rrs2_mean_wv','wind_speed','chla'],\
+    #          'SEABASS_ALL':['Rrs2_mean_wv'],\
+    #          'SEABASS_OCI':['Rrs2_mean_wv'],\
+    #         }
     
-    pair_dic={
-              'SEABASS_OCI':['Rrs2_mean_wv'],\
-             }
+    #pair_dic={
+    #          'SEABASS_OCI':['Rrs2_mean_wv'],\
+    #         }
+
+    #pair_dic = {'AOD15':['aot_wv','angstrom_440_670']}
     
     #pair_dic={'ATL_ALD_2A':['alh']}
     
