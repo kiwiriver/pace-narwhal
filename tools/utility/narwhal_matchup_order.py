@@ -3,7 +3,7 @@ import re
 from collections import defaultdict
 
 # Usage:
-main_var_order = ["validation_diff", 'AOD15', 'SDA15', 'ALM15', 'HYB15', 'MAN_AOD15', 'MAN_SDA15', 'LMN15']
+main_var_order = ["map", 'AOD15', 'SDA15', 'ALM15', 'HYB15', 'MAN_AOD15', 'MAN_SDA15', 'LMN15']
 sec_var_order = ['aot_wv', 'aot_fine_wv', 'aot_coarse_wv', 'ssa_wv', 'angstrom']
 
 def get_image_files(folder_path):

@@ -154,7 +154,6 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
             df1 = get_all_csv(csv_files)
             mask1 = get_mask(df1, chi2_max2, nv_min2, min_aod2, max_aod2, aot550_key=aot550_key)
 
-            
             #try:
             print("----start csv creation----------------------------------------------------------")
             
@@ -185,30 +184,37 @@ def narwhal_combine_summary(product1, path_dict, tspan, chi2_max1, nv_min1, min_
                 #dft_std = df1.groupby('site')[numeric_cols].std().reset_index()
             
                 # save csv to internal path
-                save_csv_path = os.path.join(summary_folder_csv, f"{suite1}_{var1}")
-                os.makedirs(save_csv_path, exist_ok=True)
-                #print("    ====path to save csv avg in local:", save_csv_path)
+                # add another subfolder for both summary and share path
+                summary_folder_csv_var = os.path.join(summary_folder_csv, f"{suite1}_{var1}")
+                os.makedirs(summary_folder_csv_var, exist_ok=True)
+                share_folder_csv_var = os.path.join(share_folder_csv, f"{suite1}_{var1}")
+                os.makedirs(share_folder_csv_var, exist_ok=True)
+                
+                #print("    ====path to save csv avg in local:", summary_folder_csv_var)
                 
                 #add total number of entries in filename
                 file_save_mean = filet.replace('.csv', f'_avg_{num_str}.csv')
-                path_save_mean = os.path.join(save_csv_path, file_save_mean)
+                path_save_mean = os.path.join(summary_folder_csv_var, file_save_mean)
                 dft_mean.to_csv(path_save_mean, index=False)
                 
                 #full list
                 file_save_full = filet.replace('.csv', f'_full_{num_str}.csv')
-                path_save_full = os.path.join(save_csv_path, file_save_full)
+                path_save_full = os.path.join(summary_folder_csv_var, file_save_full)
                 dft.to_csv(path_save_full, index=False)
                 
                 #copy file to fileshsare folder
-                shutil.copy(path_save_full, share_folder_csv)
-                csv_file_share[key1] = os.path.join(share_folder_csv, file_save_full)
+                #makesure the same file structure for both share and summary data
+                shutil.copy(path_save_full, share_folder_csv_var)
+                csv_file_share[key1] = os.path.join(share_folder_csv_var, file_save_full)
                 
                 
             print("-----format csv file ---------------------------------------------------------")
-
+            
+            
             ##reformat the data structure
             file1=csv_file_share['target_mean'] #validation target source
             file2=csv_file_share['pace_mean']   #pace product
+            print(file1, file2)
             reformat_csv(file1, file2, aot550_key)
             
             file1=csv_file_share['target_std'] #validation target source

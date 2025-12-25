@@ -81,9 +81,13 @@ def get_global_map(file1, file2, suite1, var1, wvv4b,\
         
         # Create output filename
         os.makedirs(summary_folder_plot, exist_ok=True)
+
+        #validation map, or validation diffvalidation/share/spexone_fastmapol/aeronet_oc/criteria_c5.0_r10_h2.0_chi22.0_nvref120_nvdolp120_qf5/summary/date_20240701-20250731/subset_chi2max2_nv120_minaod0.01_maxaod1
+        file_type='_map.png'
+        
         outfile = os.path.join(
             summary_folder_plot,
-            f"{product1}_{case['suite1']}_{case['var0']}_validation_diff.png"
+            f"{case['suite1']}_{case['var0']}{file_type}"
         )
         print("     *****save global diff map location:", outfile)
         title = f"Global Map: {case['suite1']} {case['var0']} (PACE with validation)"

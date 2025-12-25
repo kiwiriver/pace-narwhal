@@ -78,7 +78,12 @@ def parse_filename(filename):
             remaining = base_name
     
     # Extract plot type (corr or hist)
-    plot_type = 'corr' if remaining.endswith('_corr') else ('hist' if remaining.endswith('_hist') else 'other')
+    #plot_type = 'corr' if remaining.endswith('_corr') else ('hist' if remaining.endswith('_hist') else 'other')
+    plot_type = 'corr' if remaining.endswith('_corr') else (
+    'hist' if remaining.endswith('_hist') else (
+        'map' if remaining.endswith('_map') else 'other'
+    )
+)
     
     # Remove plot type from remaining
     if plot_type != 'other':
